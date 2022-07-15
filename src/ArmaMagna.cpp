@@ -19,7 +19,7 @@ int countWords(const string &strString); //Counts words in a string
 
 //Constructor
 ArmaMagna::ArmaMagna(const string &sourceText, const string &dictionaryName, const string &includedText,
-                     int minCardinality, int maxCardinality, int minWordLength, int maxWordLength, int threads)
+                     int minCardinality, int maxCardinality, int minWordLength, int maxWordLength)
 {
     try
     {
@@ -27,7 +27,7 @@ ArmaMagna::ArmaMagna(const string &sourceText, const string &dictionaryName, con
         setDictionaryName(dictionaryName);
         setIncludedText(includedText);
         setRestrictions(minCardinality, maxCardinality, minWordLength, maxWordLength);
-        setThreadsNumber(threadsNumber);
+        setThreadsNumber();
     }
     catch(invalid_argument &e) {throw invalid_argument(e.what());}
 }
@@ -40,7 +40,6 @@ int ArmaMagna::getMinCardinality()                const {return minCardinality;}
 int ArmaMagna::getMaxCardinality()                const {return maxCardinality;}
 int ArmaMagna::getMinWordLength()                 const {return minWordLength;}
 int ArmaMagna::getMaxWordLength()                 const {return maxWordLength;}
-int ArmaMagna::getThreadsNumber()                 const {return threadsNumber;}
 
 //Setters
 void ArmaMagna::setSourceText(const string &sourceText)
@@ -102,10 +101,8 @@ void ArmaMagna::setRestrictions(int minCardinality, int maxCardinality, int minW
     effectiveMaxCardinality = maxCardinality - includedWordsNumber;
 }
 
-void ArmaMagna::setThreadsNumber(int threadsNumber)
+void ArmaMagna::setThreadsNumber()
 {
-    this->threadsNumber = threadsNumber;
-
     //Finds out the number of cpu cores
     concurrentThreadsSupported = thread::hardware_concurrency();
     if(concurrentThreadsSupported == 0) concurrentThreadsSupported = 1;
@@ -149,7 +146,6 @@ void ArmaMagna::print(ostream &os)
     else                   cout << setw(25) << "Included text: " << includedText      << "\n";
     cout << setw(25) << "Cardinality:"              << "(" << minCardinality          << ", " << maxCardinality << ")\n";
     cout << setw(25) << "Anagram words length:"     << "(" << minWordLength           << ", " << maxWordLength  << ")\n";
-    cout << setw(25) << "Search threads:"           << threadsNumber                  << "\n";
     cout << setw(25) << "Estimated concurrency:"    << concurrentThreadsSupported     << "\n" << endl;
 
     cout << setw(25) << "Source text signature:"    << sourceTextSignature            << "\n";

@@ -1,5 +1,5 @@
-CFLAGS=-Wall -c -O2 -std=c++11
-LFLAGS=-Wall -s -lpthread
+CFLAGS=-c -O2 -std=c++11
+LFLAGS=-s -lpthread
 OBJFILES = obj/main.o obj/WordSignature.o obj/SmartDictionary.o obj/StringNormalizer.o obj/PowerSet.o obj/CommandLineParser.o obj/SearchThread.o obj/ArmaMagna.o
 
 target: $(OBJFILES)
