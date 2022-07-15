@@ -14,7 +14,7 @@ class ArmaMagna
 
 public:
     ArmaMagna(const std::string &sourceText, const std::string &dictionaryName, const std::string &includedText,
-                        int minCardinality, int maxCardinality, int minWordLength, int maxWordLength, int threadsNumber);
+                        int minCardinality, int maxCardinality, int minWordLength, int maxWordLength);
     void anagram();
 
     //Getters
@@ -32,7 +32,6 @@ public:
     void setDictionaryName(const std::string &dictionaryName);
     void setIncludedText(const std::string &includedText);
     void setRestrictions(int minCardinality, int maxCardinality, int minWordLength, int maxWordLength);
-    void setThreadsNumber(int threadsNumber);
 
 private:
     //Constructor arguments
@@ -41,7 +40,6 @@ private:
     std::string includedText;
     int minCardinality, maxCardinality;
     int minWordLength, maxWordLength;
-    int threadsNumber;
 
     //Processed variables
     SmartDictionary *dictionaryPtr;
