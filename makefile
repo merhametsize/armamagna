@@ -1,32 +1,34 @@
 CFLAGS=-Wall -c -O2 -std=c++11
 LFLAGS=-Wall -s -lpthread
+OBJFILES = obj/main.o obj/WordSignature.o obj/SmartDictionary.o obj/StringNormalizer.o obj/PowerSet.o obj/CommandLineParser.o obj/SearchThread.o obj/ArmaMagna.o
 
-target: main.o WordSignature.o SmartDictionary.o StringNormalizer.o PowerSet.o CommandLineParser.o SearchThread.o ArmaMagna.o
-	g++ $(LFLAGS) -o armamagna main.o WordSignature.o SmartDictionary.o StringNormalizer.o PowerSet.o CommandLineParser.o SearchThread.o ArmaMagna.o
+target: $(OBJFILES)
+	mv *.o obj
+	g++ $(LFLAGS) -o armamagna $(OBJFILES)
 
-main.o: main.cpp
-	g++ $(CFLAGS) main.cpp
+obj/main.o: src/main.cpp
+	g++ $(CFLAGS) src/main.cpp
 
-WordSignature.o: WordSignature.cpp WordSignature.h
-	g++ $(CFLAGS) WordSignature.cpp
+obj/WordSignature.o: src/WordSignature.cpp src/WordSignature.h
+	g++ $(CFLAGS) src/WordSignature.cpp
 
-SmartDictionary.o: SmartDictionary.cpp SmartDictionary.h
-	g++ $(CFLAGS) SmartDictionary.cpp
+obj/SmartDictionary.o: src/SmartDictionary.cpp src/SmartDictionary.h
+	g++ $(CFLAGS) src/SmartDictionary.cpp
 
-StringNormalizer.o: StringNormalizer.cpp StringNormalizer.h
-	g++ $(CFLAGS) StringNormalizer.cpp
+obj/StringNormalizer.o: src/StringNormalizer.cpp src/StringNormalizer.h
+	g++ $(CFLAGS) src/StringNormalizer.cpp
 
-ArmaMagna.o: ArmaMagna.cpp ArmaMagna.h
-	g++ $(CFLAGS) ArmaMagna.cpp
+obj/ArmaMagna.o: src/ArmaMagna.cpp src/ArmaMagna.h
+	g++ $(CFLAGS) src/ArmaMagna.cpp
 
-PowerSet.o: PowerSet.cpp PowerSet.h
-	g++ $(CFLAGS) PowerSet.cpp
+obj/PowerSet.o: src/PowerSet.cpp src/PowerSet.h
+	g++ $(CFLAGS) src/PowerSet.cpp
 
-CommandLineParser.o: CommandLineParser.cpp CommandLineParser.h
-	g++ $(CFLAGS) CommandLineParser.cpp
+obj/CommandLineParser.o: src/CommandLineParser.cpp src/CommandLineParser.h
+	g++ $(CFLAGS) src/CommandLineParser.cpp
 
-SearchThread.o: SearchThread.cpp SearchThread.h
-	g++ $(CFLAGS) SearchThread.cpp
+obj/SearchThread.o: src/SearchThread.cpp src/SearchThread.h
+	g++ $(CFLAGS) src/SearchThread.cpp
 
 clean:
-	rm -f *.o
+	rm -f obj/*.o
