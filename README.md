@@ -60,6 +60,6 @@ ArmaMagna requires C++11 or later and utilizes a standard Makefile for compilati
 
 The application requires the target text, the dictionary path, and all four constraint parameters (--mincard, \--maxcard, \--minwlen, \--maxwlen) to run.  
 ```{bash}# General Usage Pattern  
-./armamagna \<source text\> \-d \<dictionary.txt\> \--mincard=\<N\> \--maxcard=\<N\> \--minwlen=\<N\> \--maxwlen=\<N\> \[optional: \-i \<text\>\]
+./armamagna "source text" [optional: -i "text to include"] -d dictionary.txt --mincard=1 --maxcard=3 --minwlen=1 --maxwlen=20 
 ``` 
 
