@@ -42,20 +42,24 @@ ArmaMagna requires C++11 or later and utilizes a standard Makefile for compilati
 
 ### **Compilation**
 
-1. **Clone the repository (or download the source files):**  
-   \# Replace with your actual repository URL if hosted  
-   git clone \[repository-url\]  
+1. **Clone the repository (or download the source files):**
+   ```{bash}
+   git clone https://github.com/merhametsize/armamagna
    cd armamagna
+   ```
 
-2. **Compile the project:**  
-   The included Makefile handles all dependencies, compilation flags, and linking. Simply run:  
+3. **Compile the project:**  
+   The included Makefile handles all dependencies, compilation flags, and linking. Simply run:
+   ```{bash}
    make
+   ```
 
    *(Note: The build is configured to use the C++11 standard, includes the **\-O2** optimization flag, and links the **Pthreads library** for multi-threaded execution.)*
 
 ### **Execution**
 
 The application requires the target text, the dictionary path, and all four constraint parameters (--mincard, \--maxcard, \--minwlen, \--maxwlen) to run.  
-\# General Usage Pattern  
-./armamagna \<source text\> \-d \<dictionary.txt\> \--mincard=\<N\> \--maxcard=\<N\> \--minwlen=\<N\> \--maxwlen=\<N\> \[optional: \-i \<text\>\]  
+```{bash}# General Usage Pattern  
+./armamagna \<source text\> \-d \<dictionary.txt\> \--mincard=\<N\> \--maxcard=\<N\> \--minwlen=\<N\> \--maxwlen=\<N\> \[optional: \-i \<text\>\]
+``` 
 
