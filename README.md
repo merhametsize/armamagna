@@ -10,15 +10,15 @@
 ## **Key Features**
 
 * **Phrase Anagram Support:** Solves anagrams for entire phrases, correctly handling spaces and punctuation within the input text.  
-* **Mandatory Substring (-i/--incl):** Allows users to specify a word or phrase that **must** be present in the final anagram. The engine intelligently subtracts these letters from the pool before searching.  
-* **Robust Constraint System:** Provides precise control over the output structure via five mandatory parameters defined by the user:  
+* **Mandatory Substring (-i/--incl):** Allows users to specify a word or phrase that **must** be present in the final anagram.
+* **Robust Constraint System:** Provides precise control over the output structure via four mandatory parameters:  
   * **Word Count:** Minimum and maximum total number of words in the resulting anagram (--mincard, \--maxcard).  
   * **Word Length:** Minimum and maximum length for individual words (--minwlen, \--maxwlen).  
 * **Unicode/Accent Normalization:** Uses the dedicated **StringNormalizer** to handle common accented characters (e.g., é, è, ê are all treated as the base letter e), ensuring compatibility with international dictionaries and inputs.
 
 ## **High Performance Architecture**
 
-The engine achieves its high performance through three primary architectural pillars:
+The engine speeds ups the anagramming process through:
 
 ### **1\. Signature-Based Dictionary Indexing**
 
@@ -34,7 +34,7 @@ The engine achieves its high performance through three primary architectural pil
 ### **3\. Parallel Processing (SearchThread & PowerSet)**
 
 * The problem is divided using the **PowerSet** class, which pre-calculates all valid word length combinations that satisfy the user's constraints.  
-* Each of these length combinations is assigned to a dedicated **SearchThread**, allowing the engine to leverage multiple CPU cores for concurrent searching.
+* Each of these length combinations is assigned to a dedicated **SearchThread**, allowing the engine to use multiple CPU cores in parallel.
 
 ## **Usage and Compilation**
 
