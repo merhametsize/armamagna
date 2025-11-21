@@ -1,5 +1,5 @@
-#ifndef DICTIONARY_H
-#define DICTIONARY_H
+#ifndef DICTIONARIUM_H
+#define DICTIONARIUM_H
 
 #include <iostream>  //For std::ostream
 #include <string>    //For std::string
@@ -11,16 +11,16 @@
 
 //Every section of the dictionary is a map that associates a signature with 1 or more words
 //Section[i] only contains words of length i
-typedef std::map<WordSignature, std::set<std::string>> Section;
+using Section = std::map<WordSignature, std::set<std::string>>;
 
-class SmartDictionary
+class Dictionarium
 {
     //Output debug function
-    friend std::ostream &operator<<(std::ostream &os, const SmartDictionary &sd);
+    friend std::ostream &operator<<(std::ostream &os, const Dictionarium &sd);
 
 public:
     //The constructor needs the source text in order to exclude all words that are not a subset of it
-    SmartDictionary(const std::string &dictionaryName, const std::string &sourceText);
+    Dictionarium(const std::string &dictionaryName, const std::string &sourceText);
 
     //Getters
     unsigned long getWordsNumber() const;                  //Returns the number of lines in the file

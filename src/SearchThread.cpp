@@ -1,24 +1,22 @@
 #include <algorithm> //For std::find
+#include <cassert>   //For assert
 #include <string>    //For std::string
 #include <vector>    //For std::vector
+#include <mutex>     //For std::mutex, std::lock_guard
 #include <set>       //For std::set std::multiset
 
 #include "SearchThread.h"
 
 using namespace std;
 
-SearchThread::SearchThread(ArmaMagna &armaMagna, const std::vector<int> &wordLengths)
+SearchThread::SearchThread(ArmaMagna &armaMagna, const std::vector<int> wordLengths)
     : armaMagna(armaMagna), wordLengths(wordLengths)
 {
-    //Allocates the 'solution' array, it will be filled with signatures that make a potential anagram
-    solution = new const WordSignature*[armaMagna.targetSignature.getCharactersNumber()];
-
+    //Modifies the size of the 'solution' vector, it will be filled with signatures that make a potential anagram
     wordsNumber = static_cast<int>(wordLengths.size());
-}
+    solution.resize(wordsNumber);
 
-SearchThread::~SearchThread()
-{
-    delete[] solution;
+    assert(wordsNumber > 0);
 }
 
 void SearchThread::operator()()
@@ -47,7 +45,9 @@ void SearchThread::search(int wordIndex)
         {
             if(!ws.isSubsetOf(armaMagna.targetSignature)) {ws -= currentSignature; continue;}
         }
+
         solution[wordIndex] = &currentSignature; //Saves a pointer to the current signature in the 'solution' array
+        assert(wordIndex >= 0 && wordIndex < wordsNumber);
 
         search(wordIndex + 1); //Recursive call
 
@@ -77,17 +77,33 @@ void SearchThread::outputSolution(multiset<string> &orderedAnagram, vector<strin
     //Base case
     if(index == wordsNumber)
     {
-        auto it = armaMagna.anagramSet.find(orderedAnagram); //Looks for the anagram in the anagramSet
-        if(it == armaMagna.anagramSet.end()) //If it's a new anagram
+        std::string outputString;
+        bool shouldPush = false;
+
+        //Formats the output string
+        for(const std::string &word : unorderedAnagram) {outputString += word; outputString += " ";}
+        assert(!outputString.empty());
+        outputString.pop_back(); //Trailing space is removed
+
+        //PRODUCER CRITICAL SECTION
         {
-            for(const string &word : unorderedAnagram) cout << word << " "; //Output
-            cout << endl;
-            armaMagna.anagramSet.emplace(orderedAnagram);
-        }
+            std::scoped_lock lock(armaMagna.anagramSetMutex, armaMagna.anagramQueueMutex);
+
+            auto it = armaMagna.anagramSet.find(orderedAnagram); //Looks for the anagram in the anagramSet
+            if(it == armaMagna.anagramSet.end()) //If it's a new anagram
+            {
+                armaMagna.anagramSet.emplace(orderedAnagram);
+                armaMagna.anagramQueue.push(std::move(outputString)); //Result is pushed to the I/O queue
+                shouldPush = true;
+            }
+        } //Critical section ends
+
+        if(shouldPush) armaMagna.anagramQueueCV.notify_one(); //If the anagram is not new, don't notify
         return;
     }
 
     //Recursive part
+    assert(index >= 0 && index < solution.size());
     const WordSignature &ws = *(solution[index]);
     const set<string> &words = armaMagna.dictionaryPtr->getWords(ws);
     for(const string &word : words)
@@ -97,8 +113,7 @@ void SearchThread::outputSolution(multiset<string> &orderedAnagram, vector<strin
 
         outputSolution(orderedAnagram, unorderedAnagram, index + 1); //Recursive call
 
-        auto it = find(unorderedAnagram.begin(), unorderedAnagram.end(), word);
-        unorderedAnagram.erase(it);
-        orderedAnagram.erase(word); //Backtracking
+        unorderedAnagram.pop_back();                        //O(1) vector backtracking
+        orderedAnagram.erase(orderedAnagram.find(word));   //O(log N) multiset backtracking
     }
 }

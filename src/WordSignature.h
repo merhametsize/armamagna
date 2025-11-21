@@ -2,7 +2,8 @@
 #define FREQUENCY_TABLE_H
 
 #include <string>  //For std::string
-#include <map>     //For std::map
+#include <ranges>  //For std::views
+#include <array>   //For std::array
 
 class WordSignature
 {
@@ -16,17 +17,18 @@ public:
     //Operators functions
     void operator+=(const WordSignature &ws);
     void operator-=(const WordSignature &ws);
-    bool operator< (const WordSignature &ws) const;
-    bool operator> (const WordSignature &ws) const;
-    bool operator==(const WordSignature &ws) const;
+    auto operator<=>(const WordSignature &ws) const = default;
     bool isSubsetOf(const WordSignature &ws) const;
 
     //Getters
     int getCharactersNumber() const;
 
+    //Transformers
+    std::string toString() const;
+
 private:
-    std::map<char, int> table;
-    std::string signature;
+    std::array<int, 26> table = {}; //Initialized to 0
 };
+
 
 #endif

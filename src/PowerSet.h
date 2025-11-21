@@ -11,10 +11,11 @@ class PowerSet
 
 public:
     PowerSet(int sum, int minCardinality, int maxCardinality, int minValue, int maxValue);
+    PowerSet() = delete;
 
     //Getters
-    int getSetsNumber() const;
-    const std::vector<int> &getSet(int i) const;
+    size_t getSetsNumber() const;
+    const std::vector<int> getSet(int i) const;
 
 private:
     std::vector<std::vector<int>> sets;

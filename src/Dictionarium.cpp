@@ -7,13 +7,13 @@
 
 #include "WordSignature.h"
 #include "StringNormalizer.h"
-#include "SmartDictionary.h"
+#include "Dictionarium.h"
 
 using namespace std;
 
 const int maxWordLength = 30; //If a word longer than 'maxWordLength' is found, program terminates
 
-SmartDictionary::SmartDictionary(const string &dictionaryName, const string &sourceText)
+Dictionarium::Dictionarium(const string &dictionaryName, const string &sourceText)
 {
     //Variable initialization
     wordsNumber = 0;
@@ -31,7 +31,7 @@ SmartDictionary::SmartDictionary(const string &dictionaryName, const string &sou
     catch(invalid_argument &e) {throw invalid_argument(e.what());}
 }
 
-void SmartDictionary::readDictionary(const string &dictionaryName, const string &sourceText)
+void Dictionarium::readDictionary(const string &dictionaryName, const string &sourceText)
 {
     //Opens the file
     ifstream file(dictionaryName, ios::in);
@@ -57,7 +57,7 @@ void SmartDictionary::readDictionary(const string &dictionaryName, const string 
         if(wordLength > maxWordLength)
         {
             string msg = "a word in the dictionary is too long (";
-            msg += word; msg += "), maximum length is "; msg += maxWordLength; msg += " characters";
+            msg += word; msg += "), maximum length is "; msg += std::to_string(maxWordLength); msg += " characters";
             throw invalid_argument(msg);
         }
 
@@ -89,33 +89,33 @@ void SmartDictionary::readDictionary(const string &dictionaryName, const string 
     }
 }
 
-unsigned long SmartDictionary::getWordsNumber() const
+unsigned long Dictionarium::getWordsNumber() const
 {
     return wordsNumber;
 }
 
-unsigned long SmartDictionary::getEffectiveWordsNumber() const
+unsigned long Dictionarium::getEffectiveWordsNumber() const
 {
     return effectiveWordsNumber;
 }
 
-size_t SmartDictionary::getLongestWordLength() const
+size_t Dictionarium::getLongestWordLength() const
 {
     return longestWordLength;
 }
 
-const Section &SmartDictionary::getSection(int sectionNumber) const
+const Section &Dictionarium::getSection(int sectionNumber) const
 {
     return sections.at(sectionNumber);
 }
 
-const set<string> &SmartDictionary::getWords(const WordSignature &ws) const
+const set<string> &Dictionarium::getWords(const WordSignature &ws) const
 {
     const int charactersNumber = ws.getCharactersNumber(); //Gets the section index
     return sections.at(charactersNumber).at(ws);          //Returns the set of words associated to ws
 }
 
-ostream &operator<<(ostream &os, const SmartDictionary &sd)
+ostream &operator<<(ostream &os, const Dictionarium &sd)
 {
     for(const auto &section : sd.sections) //For every section (i.e. word length)
     {
@@ -124,9 +124,9 @@ ostream &operator<<(ostream &os, const SmartDictionary &sd)
             const WordSignature &ws = entry.first;     //Get the signature
             const set<string> &words = entry.second;  //Get the set of words associated to that signature
 
-            cout << ws;                                    //Outputs the signature
-            for(string word : words) cout << " " << word; //Outputs the words
-            cout << endl;
+            os << ws;                                    //Outputs the signature
+            for(string word : words) os << " " << word; //Outputs the words
+            os << endl;
         }
     }
     return os;
