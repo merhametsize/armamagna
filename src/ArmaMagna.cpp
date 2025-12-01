@@ -176,7 +176,7 @@ void ArmaMagna::ioLoop()
             
             //Wait for data to arrive or the termination signal
             auto exitFunction = [this] {return !anagramQueue.empty() || searchIsComplete.load();};
-            anagramQueueCV.wait(lock, exitFunction);
+            anagramQueueCV.wait_for(lock, std::chrono::milliseconds(100), exitFunction);
 
             if(searchIsComplete.load() && anagramQueue.empty()) shouldTerminate = true; //Can't call "break" here because of lock RAII
             else if(!anagramQueue.empty())
@@ -200,7 +200,7 @@ void ArmaMagna::ioLoop()
         auto now = std::chrono::steady_clock::now();
         if(now - lastDisplayTime >= std::chrono::seconds(1))
         {
-            //std::cout << "\r" << lastDisplayedAnagram << std::flush;
+            std::cout << "\r" << lastDisplayedAnagram << std::flush;
             lastDisplayTime = now;
         }
     }
