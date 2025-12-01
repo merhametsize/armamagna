@@ -22,8 +22,7 @@ class ArmaMagna
     friend class SearchThread;
 
 public:
-    ArmaMagna(const std::string &sourceText, const std::string &dictionaryName, const std::string &includedText,
-                        int minCardinality, int maxCardinality);
+    ArmaMagna(const std::string &text, const std::string &dictionary, const std::string &included, int mincard, int maxcard);
     void anagram();
 
     //Getters
@@ -35,9 +34,9 @@ public:
     int getThreadsNumber() const;
 
     //Setters
-    void setSourceText(const std::string &sourceText);
-    void setDictionaryName(const std::string &dictionaryName);
-    void setIncludedText(const std::string &includedText);
+    void setSourceText(const std::string sourceText);
+    void setDictionaryName(const std::string dictionaryName);
+    void setIncludedText(const std::string includedText);
     void setRestrictions(int minCardinality, int maxCardinality);
     void setThreadsNumber();
 
@@ -53,7 +52,7 @@ private:
     WordSignature sourceTextSignature, includedTextSignature, targetSignature; //targetSignature = sourceTextSignature - includedTextSignature
     int includedWordsNumber;
     int effectiveMinCardinality, effectiveMaxCardinality;
-    unsigned int concurrentThreadsSupported; //std::hread::hardware_concurrency();
+    unsigned int supportedConcurrency; //std::thread::hardware_concurrency();
 
     /***************SHARED RESOURCES***************/
 
@@ -74,7 +73,7 @@ private:
     std::jthread ioThread;
 
     //Private functions
-    void print(std::ostream &os);  //Debug print function
+    void print();  //Debug print function
     void ioLoop();                //Thread that writes anagrams to file
 };
 

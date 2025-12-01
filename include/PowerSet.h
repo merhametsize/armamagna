@@ -10,7 +10,7 @@ class PowerSet
     friend std::ostream &operator<<(std::ostream &os, const PowerSet &ps);
 
 public:
-    PowerSet(int sum, int minCardinality, int maxCardinality, int minValue, int maxValue);
+    PowerSet(int sum, int minCardinality, int maxCardinality, std::vector<int> values);
     PowerSet() = delete;
 
     //Getters
@@ -19,11 +19,12 @@ public:
 
 private:
     std::vector<std::vector<int>> sets;
-    int sum, minCardinality, maxCardinality, minValue, maxValue;
+    int sum, minCardinality, maxCardinality;
+    std::vector<int> values;
     
     void computePowerSet();
     void addSet(const std::vector<int> &set, int n);
-    void repeatedCombinationsWithSum(int n, int k, const std::vector<int> &values, std::vector<int> &solution, int sum, int pos, int start, int itemsSum);
+    void repeatedCombinationsWithSum(int n, int k, std::vector<int> &solution, int pos, int start, int itemsSum);
 };
 
 #endif

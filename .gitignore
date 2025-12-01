@@ -1,4 +1,3 @@
-armamagna
-*.o
+.vscode/
+build/
 anagrams.txt
-.vscode

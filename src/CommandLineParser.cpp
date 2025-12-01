@@ -86,5 +86,5 @@ string CommandLineParser::getFirstArgument()
 
 string CommandLineParser::getLastArgument()
 {
-    return getArgument(tokens.size() - 1);
+    return getArgument(static_cast<int>(tokens.size()) - 1);
 }

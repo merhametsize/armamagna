@@ -28,6 +28,7 @@ public:
     size_t getLongestWordLength() const;                 //Returns the length of its longest word. Needed when creating the powerset
     const Section &getSection(int sectionNumber) const; //Returns a dictionary section. Needed in the search algorithm to iterate through signtures
     const std::set<std::string> &getWords(const WordSignature &ws) const; //Returns the set of words associated to a signature
+    const std::vector<int> getAvailableLengths() const;
 
 private:
     unsigned int wordsNumber;

@@ -1,6 +1,6 @@
-#include <iostream>
-#include <fstream>    //For std::ifstream
 #include <stdexcept>  //For std::invalid_argument and std::exception
+#include <fstream>    //For std::ifstream
+#include <cassert>    //For assert
 #include <string>     //For std::string
 #include <map>        //For std::map
 #include <set>        //For std::set
@@ -21,8 +21,8 @@ Dictionarium::Dictionarium(const string &dictionaryName, const string &sourceTex
     longestWordLength = 0;
 
     //Initializes the sections, creating a map for each one
-    sections.reserve(maxWordLength + 1);
-    for(int i=1; i<=maxWordLength; i++) sections.push_back(map<WordSignature, set<string>>());
+    sections.resize(maxWordLength+1); //sections[0] is not valid
+    for(int i=0; i<maxWordLength+1; i++) sections.push_back(map<WordSignature, set<string>>());
 
     try
     {
@@ -52,6 +52,8 @@ void Dictionarium::readDictionary(const string &dictionaryName, const string &so
         try {normalizedWord = StringNormalizer::normalize(word);}
         catch (invalid_argument &e) {throw invalid_argument(e.what());}
 
+        if(normalizedWord.empty()) continue; //Skip empty normalized words
+
         //If it's longer than maxWordLength, exception
         const size_t wordLength = normalizedWord.length();
         if(wordLength > maxWordLength)
@@ -70,13 +72,13 @@ void Dictionarium::readDictionary(const string &dictionaryName, const string &so
         if(normalizedWord.length() > longestWordLength) longestWordLength = normalizedWord.length();
 
         //Looks for the signature in the right section
-        Section &rightSection = sections.at(wordLength);
+        Section &rightSection = sections.at(static_cast<int>(wordLength));
         auto it = rightSection.find(ws);
         if(it == rightSection.end())   //If the signature is not yet in the map
         {
             set<string> wordSet;                   //Creates a new set of strings
             wordSet.emplace(word);                //Puts the word in it
-            rightSection.emplace(ws, wordSet);   //Creates a new map entry with the signature and the word
+            rightSection.emplace(ws, std::move(wordSet));   //Creates a new map entry with the signature and the word
 
             effectiveWordsNumber++;
         }
@@ -106,6 +108,7 @@ size_t Dictionarium::getLongestWordLength() const
 
 const Section &Dictionarium::getSection(int sectionNumber) const
 {
+    assert(sectionNumber > 0 && sectionNumber <= maxWordLength);
     return sections.at(sectionNumber);
 }
 
@@ -113,6 +116,16 @@ const set<string> &Dictionarium::getWords(const WordSignature &ws) const
 {
     const int charactersNumber = ws.getCharactersNumber(); //Gets the section index
     return sections.at(charactersNumber).at(ws);          //Returns the set of words associated to ws
+}
+
+const std::vector<int> Dictionarium::getAvailableLengths() const 
+{
+    std::vector<int> availableLengths;
+    for(auto [i, s]: sections | std::views::enumerate)
+    {
+        if(!s.empty()) availableLengths.push_back(static_cast<int>(i));
+    }
+    return availableLengths;
 }
 
 ostream &operator<<(ostream &os, const Dictionarium &sd)

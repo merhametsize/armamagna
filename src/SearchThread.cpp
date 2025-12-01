@@ -3,21 +3,21 @@
 #include <string>    //For std::string
 #include <vector>    //For std::vector
 #include <mutex>     //For std::mutex, std::lock_guard
+#include <print>     //For std::println
 #include <set>       //For std::set std::multiset
 
 #include "SearchThread.h"
 
 using namespace std;
 
-SearchThread::SearchThread(ArmaMagna &armaMagna, const std::vector<int> wordLengths)
-    : armaMagna(armaMagna), wordLengths(wordLengths)
+SearchThread::SearchThread(ArmaMagna &am, const std::vector<int>& wl)
+    : armaMagna(am), wordLengths(wl)
 {
     //Modifies the size of the 'solution' vector, it will be filled with signatures that make a potential anagram
     wordsNumber = static_cast<int>(wordLengths.size());
-    solution.resize(wordsNumber);
-
     assert(wordsNumber > 0);
-}
+    solution.resize(wordsNumber);
+}   
 
 void SearchThread::operator()()
 {
@@ -46,7 +46,7 @@ void SearchThread::search(int wordIndex)
             if(!ws.isSubsetOf(armaMagna.targetSignature)) {ws -= currentSignature; continue;}
         }
 
-        solution[wordIndex] = &currentSignature; //Saves a pointer to the current signature in the 'solution' array
+        solution[wordIndex] = currentSignature; //Saves a pointer to the current signature in the 'solution' array
         assert(wordIndex >= 0 && wordIndex < wordsNumber);
 
         search(wordIndex + 1); //Recursive call
@@ -103,9 +103,9 @@ void SearchThread::outputSolution(multiset<string> &orderedAnagram, vector<strin
     }
 
     //Recursive part
-    assert(index >= 0 && index < solution.size());
-    const WordSignature &ws = *(solution[index]);
-    const set<string> &words = armaMagna.dictionaryPtr->getWords(ws);
+    assert(index >= 0 && index < static_cast<int>(solution.size()));
+    const WordSignature wordSignature = solution[index];
+    const set<string> &words = armaMagna.dictionaryPtr->getWords(wordSignature);
     for(const string &word : words)
     {
         orderedAnagram.emplace(word);     //Adds the word to the list

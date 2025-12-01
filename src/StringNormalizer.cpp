@@ -36,7 +36,7 @@ string StringNormalizer::normalize(const string &s)
             i += 1;
         }
         else if(!isalpha(c)) {}          //Ignores non-alphabetic characters
-        else result += std::tolower(c); //Lowers the alphabetic character
+        else result += static_cast<char>(std::tolower(c)); //Lowers the alphabetic character
     }
     return result;
 }

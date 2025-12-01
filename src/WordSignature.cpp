@@ -1,8 +1,9 @@
 #include <iostream>        //For I/O functions
-#include <string>          //For std::string
 #include <algorithm>       //For std::sort
+#include <cassert>         //For assert
 #include <numeric>         //For std::accumulate
 #include <ranges>          //For c++23 std::views::enumerate
+#include <string>          //For std::string
 #include <array>           //For std::array
 
 #include "WordSignature.h"
@@ -21,6 +22,7 @@ WordSignature::WordSignature(const std::string &word)
     for(const char c : word)  //For each character in the string
     {
         //O(1) table access
+        assert(c>='a' && c<='z'); //Ensures the character is alphabetical
         table[c - 'a']++; //a-a=0, c-a=2 etc, assuming 'c' is normalized
     }
 }
@@ -40,6 +42,7 @@ void WordSignature::operator-=(const WordSignature &ws)
     for(const auto [i, count] : ws.table | std::views::enumerate) //Pipes the container through the enumerate adaptor
     {
         table[i] -= count;
+        assert(table[i] >= 0);
     }
 }
 
@@ -67,6 +70,7 @@ std::string WordSignature::toString() const
         if (count > 0)
         {
             char c = static_cast<char>('a' + i);
+            assert(count <= 40);
             str.append(count, c);
         }
     }
