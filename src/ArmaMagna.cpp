@@ -1,14 +1,11 @@
 #include <iostream>  //For I/O
-#include <algorithm> //For std::find
 #include <memory>    //For std::make_unique, std::unique_ptr
 #include <string>    //For std::string
 #include <vector>    //For std::vector
 #include <chrono>    //For std::chrono
-#include <cctype>    //For std::isspace
 #include <ranges>    //For std::views, std::ranges::distance
 #include <format>    //For std::format
 #include <print>     //For std::print
-#include <set>       //For std::set
 
 #include "WordSignature.h"
 #include "Dictionarium.h"
@@ -116,7 +113,7 @@ void ArmaMagna::anagram()
     catch (std::invalid_argument &e) {throw std::invalid_argument(e.what());}
     std::print(" completed\n");
     std::print("Read {} words", dictionaryPtr->getWordsNumber());
-    std::print(", filtered {}\n", dictionaryPtr->getWordsNumber() - dictionaryPtr->getEffectiveWordsNumber());
+    std::print(", filtered {}\n\n", dictionaryPtr->getWordsNumber() - dictionaryPtr->getEffectiveWordsNumber());
 
     {   //I/O thread RAII scope
         ioThread = std::jthread(&ArmaMagna::ioLoop, this); //I/O thread is launched
@@ -176,11 +173,12 @@ void ArmaMagna::ioLoop()
             
             //Wait for data to arrive or the termination signal
             auto exitFunction = [this] {return !anagramQueue.empty() || searchIsComplete.load();};
-            anagramQueueCV.wait_for(lock, std::chrono::milliseconds(100), exitFunction);
+            anagramQueueCV.wait(lock, exitFunction);
 
             if(searchIsComplete.load() && anagramQueue.empty()) shouldTerminate = true; //Can't call "break" here because of lock RAII
             else if(!anagramQueue.empty())
             {
+                anagramCount++;
                 currentAnagram = anagramQueue.front();
                 anagramQueue.pop();
             }
@@ -200,7 +198,9 @@ void ArmaMagna::ioLoop()
         auto now = std::chrono::steady_clock::now();
         if(now - lastDisplayTime >= std::chrono::seconds(1))
         {
-            std::cout << "\r" << lastDisplayedAnagram << std::flush;
+            std::print("\r[{}] {}{}", anagramCount, lastDisplayedAnagram, std::string(30, ' '));
+            std::cout << std::flush;
+            //std::cout << "\r" <<  << lastDisplayedAnagram << std::flush;
             lastDisplayTime = now;
         }
     }

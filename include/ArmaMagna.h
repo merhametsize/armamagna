@@ -68,6 +68,9 @@ private:
     std::ofstream outputFile;
     std::jthread ioThread;
 
+    //Statistics
+    unsigned long long anagramCount = 0;
+
     //Private functions
     void print();  //Debug print function
     void ioLoop();                //Thread that writes anagrams to file

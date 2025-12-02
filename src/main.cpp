@@ -7,18 +7,18 @@
 #include "CommandLineParser.h"
 #include "ArmaMagna.h"
 
-using namespace std;
+#include <CLI11.hpp>
 
 void printUsage();
-bool readArguments(int argc, char **argv, string &source, string &dictionary, string &includedText,
+bool readArguments(int argc, char **argv, std::string &source, std::string &dictionary, std::string &includedText,
                    int &minCardinality, int &maxCardinality);
 
 int main(int argc, char **argv)
 {
     //Command line argument variables, set to illegal value
-    string source       = "";
-    string dictionary   = "";
-    string includedText = "";
+    std::string source       = "";
+    std::string dictionary   = "";
+    std::string includedText = "";
     int minCardinality  = -1;
     int maxCardinality  = -1;
 
@@ -32,55 +32,45 @@ int main(int argc, char **argv)
         ArmaMagna am(source, dictionary, includedText, minCardinality, maxCardinality);
         am.anagram();
     }
-    catch(invalid_argument &e) {cerr << "[x] Invalid argument: " << e.what() << endl;}
-    catch(exception &e)        {cerr << "[x] Error: " << e.what() << endl;}
+    catch(std::invalid_argument &e) {std::cerr << "[x] Invalid argument: " << e.what() << std::endl;}
+    catch(std::exception &e)        {std::cerr << "[x] Error: " << e.what() << std::endl;}
 
     return 0;
 }
 
 //Returns true if arguments are valid, false otherwise
-bool readArguments(int argc, char **argv, string &source, string &dictionary, string &includedText,
+bool readArguments(int argc, char **argv, std::string &source, std::string &dictionary, std::string &includedText,
                    int &minCardinality, int &maxCardinality)
 {
-    //Uses class CommandLineParser to parse command line arguments and fetch options
-    CommandLineParser clp(argc, argv);
+    CLI::App app("ArmaMagna");
 
-    //Help options, displays help and quits
-    if(clp.isPresent("--help")) {printUsage(); exit(0);}
+    app.add_option("text", source, "Text to anagram")->required();
+    app.add_option("-d,--dict", dictionary, "Dictionary file path")->required();
+    app.add_option("-i,--incl", includedText, "Included text");
+    app.add_option("--mincard", minCardinality, "Minimum cardinality")->required();
+    app.add_option("--maxcard", maxCardinality, "Maximum cardinality")->required();
 
-    //String options
-    source       = clp.getFirstArgument();
-    dictionary   = clp.getOption("-d", "--dict");
-    includedText = clp.getOption("-i", "--incl");
+    CLI11_PARSE(app, argc, argv);
 
-    //Integer options, std::strtoi used in CommandLineParser might throw invalid_argument exception
-    try
-    {
-        minCardinality = clp.getOptionAsInt("--mincard");
-        maxCardinality = clp.getOptionAsInt("--maxcard");
-    }
-    catch (invalid_argument &e) {/*empty, variables in main will keep their illegal value*/}
-
-    //Checks mandatory arguments' validity
-    if(source == "" || dictionary == "") return false;
-    if(minCardinality == -1 || maxCardinality == -1) return false;
+    if(source.empty() || dictionary.empty()) return false;
+    if(minCardinality < 0 || maxCardinality < 0) return false;
 
     return true;
 }
 
 void printUsage()
 {
-    cout << "Usage: armamagna <text> -d <dictionary> [options]\n";
-    cout << "Multi-threaded anagrammer engine. Anagrams are found by combining words of a dictionary.\n";
-    cout << "Accented and non-accented letters are considered the same letter (e.g. é è e).\n";
-    cout << "Author: Gabriele Cassetta, @merhametsize, 2018.\n\n";
-    cout << "Options:\n";
-    cout << left << setw(10) << "-d <dict>" << setw(15) << "--dict=<dict>" << "[Mandatory] Specifies which dictionary shall be used\n";
-    cout << left << setw(10) << "" << setw(15) << "--mincard=<n>" << "[Mandatory] Sets the minimum number of words in the anagrams\n";
-    cout << left << setw(10) << "" << setw(15) << "--maxcard=<n>" << "[Mandatory] Sets the maximum number of words in the anagrams\n";
-    cout << left << setw(10) << "-i <text>" << setw(15) << "--incl=<text>" << "Find anagrams that contain this text (default: none)\n";
-    cout << "Examples:\n";
-    cout << "\tarmamagna \"uncle pear\" -d english-dictionary.txt -i \"luna\" --mincard=1 --maxcard=3 --minwlen=1 --maxwlen=30\n";
-    cout << "\tarmamagna \"sò cel a lo dësmentia mai\" -d dissionari-piemonteis.txt --mincard=2 --maxcard=5 --minwlen=2 --maxwlen=30";
-    cout << endl;
+    std::cout << "Usage: armamagna <text> -d <dictionary> [options]\n";
+    std::cout << "Multi-threaded anagrammer engine. Anagrams are found by combining words of a dictionary.\n";
+    std::cout << "Accented and non-accented letters are considered the same letter (e.g. é è e).\n";
+    std::cout << "Author: Gabriele Cassetta, @merhametsize, 2018.\n\n";
+    std::cout << "Options:\n";
+    std::cout << std::left << std::setw(10) << "-d <dict>" << std::setw(15) << "--dict=<dict>" << "[Mandatory] Specifies which dictionary shall be used\n";
+    std::cout << std::left << std::setw(10) << "" << std::setw(15) << "--mincard=<n>" << "[Mandatory] Sets the minimum number of words in the anagrams\n";
+    std::cout << std::left << std::setw(10) << "" << std::setw(15) << "--maxcard=<n>" << "[Mandatory] Sets the maximum number of words in the anagrams\n";
+    std::cout << std::left << std::setw(10) << "-i <text>" << std::setw(15) << "--incl=<text>" << "Find anagrams that contain this text (default: none)\n";
+    std::cout << "Examples:\n";
+    std::cout << "\tarmamagna \"uncle pear\" -d english-dictionary.txt -i \"luna\" --mincard=1 --maxcard=3 --minwlen=1 --maxwlen=30\n";
+    std::cout << "\tarmamagna \"sò cel a lo dësmentia mai\" -d dissionari-piemonteis.txt --mincard=2 --maxcard=5 --minwlen=2 --maxwlen=30";
+    std::cout << std::endl;
 }
