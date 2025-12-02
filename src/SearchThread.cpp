@@ -1,4 +1,4 @@
-#include <algorithm> //For std::find
+#include <algorithm> //For std::sort
 #include <cassert>   //For assert
 #include <string>    //For std::string
 #include <vector>    //For std::vector
@@ -75,23 +75,22 @@ void SearchThread::outputSolution(std::multiset<std::string> &orderedAnagram, st
     //Base case
     if(index == wordsNumber)
     {
-        std::string outputString;
+        std::string canonicalString;
         bool shouldPush = false;
 
         //Formats the output string
-        for(const std::string &word : unorderedAnagram) {outputString += word; outputString += " ";}
-        assert(!outputString.empty());
-        outputString.pop_back(); //Trailing space is removed
+        std::sort(unorderedAnagram.begin(), unorderedAnagram.end());
+        for(const std::string &word : unorderedAnagram) {canonicalString += word; canonicalString += " ";}
+        assert(!canonicalString.empty());  
+        canonicalString.pop_back(); //Trailing space is removed
 
         //PRODUCER CRITICAL SECTION
         {
-            std::scoped_lock lock(armaMagna.anagramSetMutex, armaMagna.anagramQueueMutex);
+            std::lock_guard lock(armaMagna.anagramQueueMutex);
 
-            auto it = armaMagna.anagramSet.find(orderedAnagram); //Looks for the anagram in the anagramSet
-            if(it == armaMagna.anagramSet.end()) //If it's a new anagram
+            if(anagramSet.insert(canonicalString).second) //If the insertion took place, it's a new anagram
             {
-                armaMagna.anagramSet.emplace(orderedAnagram);
-                armaMagna.anagramQueue.push(std::move(outputString)); //Result is pushed to the I/O queue
+                armaMagna.anagramQueue.push(std::move(canonicalString)); //Result is pushed to the I/O queue
                 shouldPush = true;
             }
         } //Critical section ends

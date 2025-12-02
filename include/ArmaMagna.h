@@ -56,10 +56,6 @@ private:
 
     /***************SHARED RESOURCES***************/
 
-    //Set of anagrams, used to remove duplicates ("a b c" & "b c a" are the same anagram)
-    std::set<std::multiset<std::string>> anagramSet;
-    std::mutex anagramSetMutex;
-
     //Thread-safe output queue
     std::queue<std::string> anagramQueue;
     std::mutex anagramQueueMutex;
