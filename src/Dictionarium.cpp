@@ -1,19 +1,17 @@
-#include <stdexcept>  //For std::invalid_argument and std::exception
-#include <fstream>    //For std::ifstream
-#include <cassert>    //For assert
+#include <unordered_map>  //For std::unorderd_map
+#include <stdexcept>     //For std::invalid_argument and std::exception
+#include <fstream>      //For std::ifstream
+#include <cassert>     //For assert
 #include <string>     //For std::string
-#include <map>        //For std::map
-#include <set>        //For std::set
+#include <set>       //For std::set
 
 #include "WordSignature.h"
 #include "StringNormalizer.h"
 #include "Dictionarium.h"
 
-using namespace std;
-
 const int maxWordLength = 30; //If a word longer than 'maxWordLength' is found, program terminates
 
-Dictionarium::Dictionarium(const string &dictionaryName, const string &sourceText)
+Dictionarium::Dictionarium(const std::string &dictionaryName, const std::string &sourceText)
 {
     //Variable initialization
     wordsNumber = 0;
@@ -22,35 +20,35 @@ Dictionarium::Dictionarium(const string &dictionaryName, const string &sourceTex
 
     //Initializes the sections, creating a map for each one
     sections.resize(maxWordLength+1); //sections[0] is not valid
-    for(int i=0; i<maxWordLength+1; i++) sections.push_back(map<WordSignature, set<string>>());
+    for(int i=0; i<maxWordLength+1; i++) sections.emplace_back();
 
     try
     {
         readDictionary(dictionaryName, sourceText);
     }
-    catch(invalid_argument &e) {throw invalid_argument(e.what());}
+    catch(std::invalid_argument &e) {throw std::invalid_argument(e.what());}
 }
 
-void Dictionarium::readDictionary(const string &dictionaryName, const string &sourceText)
+void Dictionarium::readDictionary(const std::string &dictionaryName, const std::string &sourceText)
 {
     //Opens the file
-    ifstream file(dictionaryName, ios::in);
-    if(!file) {string msg = "cannot open "; msg += dictionaryName; throw invalid_argument(msg);}
+    std::ifstream file(dictionaryName, std::ios::in);
+    if(!file) {std::string msg = "cannot open "; msg += dictionaryName; throw std::invalid_argument(msg);}
 
     //Computes the source text signature
-    string normalizedSourceText;
+    std::string normalizedSourceText;
     try {normalizedSourceText = StringNormalizer::normalize(sourceText);} //Normalizes the source text
-    catch (invalid_argument &e) {throw invalid_argument(e.what());}
+    catch (std::invalid_argument &e) {throw std::invalid_argument(e.what());}
     WordSignature sourceSignature(normalizedSourceText);
 
     //Reads the dictionary line by line
-    string word;
+    std::string word;
     while(getline(file, word))
     {
         //Normalizes the word
-        string normalizedWord;
+        std::string normalizedWord;
         try {normalizedWord = StringNormalizer::normalize(word);}
-        catch (invalid_argument &e) {throw invalid_argument(e.what());}
+        catch (std::invalid_argument &e) {throw std::invalid_argument(e.what());}
 
         if(normalizedWord.empty()) continue; //Skip empty normalized words
 
@@ -58,9 +56,9 @@ void Dictionarium::readDictionary(const string &dictionaryName, const string &so
         const size_t wordLength = normalizedWord.length();
         if(wordLength > maxWordLength)
         {
-            string msg = "a word in the dictionary is too long (";
+            std::string msg = "a word in the dictionary is too long (";
             msg += word; msg += "), maximum length is "; msg += std::to_string(maxWordLength); msg += " characters";
-            throw invalid_argument(msg);
+            throw std::invalid_argument(msg);
         }
 
         //Computes the word's signature
@@ -76,15 +74,15 @@ void Dictionarium::readDictionary(const string &dictionaryName, const string &so
         auto it = rightSection.find(ws);
         if(it == rightSection.end())   //If the signature is not yet in the map
         {
-            set<string> wordSet;                   //Creates a new set of strings
-            wordSet.emplace(word);                //Puts the word in it
-            rightSection.emplace(ws, std::move(wordSet));   //Creates a new map entry with the signature and the word
+            std::vector<std::string> wordVector;               //Creates a new set of std::strings
+            wordVector.emplace_back(word);                    //Puts the word in it
+            rightSection.emplace(ws, std::move(wordVector)); //Creates a new map entry with the signature and the word
 
             effectiveWordsNumber++;
         }
         else //If the signature is already in the map
         {
-            it->second.emplace(word); //Adds the word to the set
+            it->second.push_back(word); //Adds the word to the set
 
             effectiveWordsNumber++;
         }
@@ -112,7 +110,7 @@ const Section &Dictionarium::getSection(int sectionNumber) const
     return sections.at(sectionNumber);
 }
 
-const set<string> &Dictionarium::getWords(const WordSignature &ws) const
+const std::vector<std::string> &Dictionarium::getWords(const WordSignature &ws) const
 {
     const int charactersNumber = ws.getCharactersNumber(); //Gets the section index
     return sections.at(charactersNumber).at(ws);          //Returns the set of words associated to ws
@@ -128,18 +126,18 @@ const std::vector<int> Dictionarium::getAvailableLengths() const
     return availableLengths;
 }
 
-ostream &operator<<(ostream &os, const Dictionarium &sd)
+std::ostream &operator<<(std::ostream &os, const Dictionarium &dict)
 {
-    for(const auto &section : sd.sections) //For every section (i.e. word length)
+    for(const auto &section : dict.sections) //For every section (i.e. word length)
     {
         for(const auto &entry : section)   //For every entry in the section
         {
             const WordSignature &ws = entry.first;     //Get the signature
-            const set<string> &words = entry.second;  //Get the set of words associated to that signature
+            const std::vector<std::string> &words = entry.second;  //Get the set of words associated to that signature
 
             os << ws;                                    //Outputs the signature
-            for(string word : words) os << " " << word; //Outputs the words
-            os << endl;
+            for(std::string word : words) os << " " << word; //Outputs the words
+            os << std::endl;
         }
     }
     return os;

@@ -1,14 +1,16 @@
-#ifndef FREQUENCY_TABLE_H
-#define FREQUENCY_TABLE_H
+#ifndef WORD_SIGNATURE_H
+#define WORD_SIGNATURE_H
 
 #include <string>  //For std::string
 #include <ranges>  //For std::views
 #include <array>   //For std::array
 
+class WordSignatureHash;
+
 class WordSignature
 {
-    //Output debug function
     friend std::ostream &operator<<(std::ostream &ostream, const WordSignature &ws);
+    friend struct std::hash<WordSignature>; 
 
 public:
     explicit WordSignature();
@@ -30,5 +32,25 @@ private:
     std::array<int, 26> table = {}; //Initialized to 0
 };
 
+template <>
+struct std::hash<WordSignature>
+{
+    ~hash() = default; 
+    hash() = default;
+
+    size_t operator()(const WordSignature& ws) const noexcept
+    {
+        size_t seed = 0;
+        std::hash<int> hasher;
+        
+        //This constant is a magic number used in hash combining
+        const size_t HASH_MAGIC = 0x9e3779b9; 
+
+        //Combine the current seed with the hash of the current count
+        for (int count : ws.table) {seed ^= hasher(count) + HASH_MAGIC + (seed << 6) + (seed >> 2);}
+        
+        return seed;
+    }
+};
 
 #endif

@@ -8,8 +8,6 @@
 
 #include "SearchThread.h"
 
-using namespace std;
-
 SearchThread::SearchThread(ArmaMagna &am, const std::vector<int>& wl)
     : armaMagna(am), wordLengths(wl)
 {
@@ -58,8 +56,8 @@ void SearchThread::search(int wordIndex)
 void SearchThread::computeSolution()
 {
     //Creates and ordered anagram and unordered one
-    multiset<string> orderedAnagram; //This one will be put in the anagramSet set, in order to avoid duplicates
-    vector<string> unorderedAnagram; //This one will be output
+    std::multiset<std::string> orderedAnagram; //This one will be put in the anagramSet set, in order to avoid duplicates
+    std::vector<std::string> unorderedAnagram; //This one will be output
 
     //Adds the included words to the vector, if there's any
     if(armaMagna.includedText != "")
@@ -72,7 +70,7 @@ void SearchThread::computeSolution()
     outputSolution(orderedAnagram, unorderedAnagram, 0); //Recursive function
 }
 
-void SearchThread::outputSolution(multiset<string> &orderedAnagram, vector<string> &unorderedAnagram, int index)
+void SearchThread::outputSolution(std::multiset<std::string> &orderedAnagram, std::vector<std::string> &unorderedAnagram, int index)
 {
     //Base case
     if(index == wordsNumber)
@@ -105,8 +103,8 @@ void SearchThread::outputSolution(multiset<string> &orderedAnagram, vector<strin
     //Recursive part
     assert(index >= 0 && index < static_cast<int>(solution.size()));
     const WordSignature wordSignature = solution[index];
-    const set<string> &words = armaMagna.dictionaryPtr->getWords(wordSignature);
-    for(const string &word : words)
+    const std::vector<std::string> &words = armaMagna.dictionaryPtr->getWords(wordSignature);
+    for(const std::string &word : words)
     {
         orderedAnagram.emplace(word);     //Adds the word to the list
         unorderedAnagram.push_back(word);

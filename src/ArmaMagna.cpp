@@ -205,6 +205,7 @@ void ArmaMagna::ioLoop()
         }
     }
 
+    std::cout << "\n";
     outputFile.close();
 }
 

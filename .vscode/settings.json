@@ -63,6 +63,18 @@
         "text_encoding": "cpp",
         "chrono": "cpp",
         "ranges": "cpp",
-        "print": "cpp"
+        "print": "cpp",
+        "csignal": "cpp",
+        "cstring": "cpp",
+        "any": "cpp",
+        "codecvt": "cpp",
+        "complex": "cpp",
+        "coroutine": "cpp",
+        "list": "cpp",
+        "source_location": "cpp",
+        "future": "cpp",
+        "shared_mutex": "cpp",
+        "cinttypes": "cpp",
+        "typeindex": "cpp"
     }
 }
