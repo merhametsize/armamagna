@@ -2,16 +2,17 @@
 #define DICTIONARIUM_H
 
 #include <unordered_map>  //For std::unordered_map
-#include <iostream>      //For std::ostream
+#include <expected>      //For std::expected, std::unexpected
 #include <string>       //For std::string
 #include <vector>      //For std::vector
-#include <set>        //For std::set
 
 #include "WordSignature.h"
 
 //Every section of the dictionary is a map that associates a signature with 1 or more words
 //Section[i] only contains words of length i
 using Section = std::unordered_map<WordSignature, std::vector<std::string>>;
+
+const int MAX_WORD_LENGTH = 30; //If a word longer than 'maxWordLength' is found, program terminates
 
 class Dictionarium
 {
@@ -34,9 +35,9 @@ private:
     unsigned int wordsNumber;
     unsigned int effectiveWordsNumber;
     size_t longestWordLength;
-    std::vector<Section> sections;
+    std::array<Section, MAX_WORD_LENGTH> sections;
 
-    void readDictionary(const std::string &dictionaryName, const std::string &sourceText);
+    auto readDictionary(const std::string &dictionaryName, const std::string &sourceText) -> std::expected<int, std::string>;
 };
 
 #endif

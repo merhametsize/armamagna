@@ -1,15 +1,12 @@
-#include <iostream>
-#include <stdexcept>
+#include <expected>
 
 #include "StringNormalizer.h"
 
-using namespace std;
-
 //Normalizes a string to ASCII alphabetic sequence
 //Example: per-ché -----> perche
-string StringNormalizer::normalize(const string &s)
+auto StringNormalizer::normalize(const std::string &s) -> std::expected<std::string, std::string>
 {
-    string result;
+    std::string result;
 
     for(size_t i=0; i<s.length(); i++)
     {
@@ -28,9 +25,7 @@ string StringNormalizer::normalize(const string &s)
             else if(nc == '\xb1')                 result += 'n';
             else //If the unicode sequence is not among those above, throws an exception
             {
-                string msg = "cannot normalize a character in string: \"";
-                msg += s; msg += "\"";
-                throw invalid_argument(msg);
+                return std::unexpected("Cannot normalize a character in string \"" + s + "\"");
             }
 
             i += 1;

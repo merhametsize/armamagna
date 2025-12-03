@@ -45,8 +45,8 @@ void ArmaMagna::setSourceText(const std::string text)
     this->sourceText = text;
 
     //Processes the source text and computes its signature
-    std::string processedSourceText = StringNormalizer::normalize(text);
-    sourceTextSignature = WordSignature(processedSourceText);
+    auto processedSourceText = StringNormalizer::normalize(text);
+    sourceTextSignature = WordSignature(processedSourceText.value()); //TODO: error check
 }
 
 void ArmaMagna::setDictionaryName(const std::string dictionary)
@@ -59,8 +59,8 @@ void ArmaMagna::setIncludedText(const std::string included)
     this->includedText = included;
 
     //Processes the included text
-    std::string processedIncludedText = StringNormalizer::normalize(included);
-    includedTextSignature = WordSignature(processedIncludedText);
+    auto processedIncludedText = StringNormalizer::normalize(included);
+    includedTextSignature = WordSignature(processedIncludedText.value()); //TODO: error check
 
     //Computes the number of included words
     if(included == "") includedWordsNumber = 0;

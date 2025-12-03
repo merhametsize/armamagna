@@ -8,7 +8,7 @@ class StringNormalizer
 public:
     //Normalizes a string to ASCII alphabetic sequence
     //Example: per-ché -----> perche
-    static std::string normalize(const std::string &s);
+    static auto normalize(const std::string &s) -> std::expected<std::string, std::string>;
 };
 
 #endif
