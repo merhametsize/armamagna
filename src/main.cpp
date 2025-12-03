@@ -31,7 +31,10 @@ int main(int argc, char **argv)
     CLI11_PARSE(app, argc, argv);
 
     //Starts anagramming
-    ArmaMagna am(source, dictionary, includedText, minCardinality, maxCardinality);
+    ArmaMagna am;
+    auto ret = am.setOptions(source, dictionary, includedText, minCardinality, maxCardinality);
+    if(!ret) {std::cout << ret.error() << std::endl; return -1;}
+
     auto anagramsFound = am.anagram();
     if(!anagramsFound) {std::cout << anagramsFound.error() << std::endl; return -1;}
 

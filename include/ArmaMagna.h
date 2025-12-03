@@ -4,7 +4,7 @@
 #include <fstream>         //For std::ostream
 #include <string>          //For std::string
 #include <vector>          //For std::vector
-#include <memory>          //For std::unique_pointer
+#include <memory>          //For std::unique_ptr
 #include <set>             //For std::set and std::multiset
 
 //Thread safety
@@ -22,8 +22,10 @@ class ArmaMagna
     friend class SearchThread;
 
 public:
-    ArmaMagna(const std::string &text, const std::string &dictionary, const std::string &included, int mincard, int maxcard);
+    ArmaMagna();
     auto anagram() -> std::expected<unsigned long long, std::string>;
+    auto setOptions(const std::string &text, const std::string &dictionary, const std::string &included, int mincard, int maxcard)
+                    -> std::expected<void, std::string>;
 
     //Getters
     const std::string &getSourceText() const;
@@ -34,22 +36,22 @@ public:
     int getThreadsNumber() const;
 
     //Setters
-    void setSourceText(const std::string sourceText);
+    auto setSourceText(const std::string targetText) -> std::expected<void, std::string>;
     void setDictionaryName(const std::string dictionaryName);
-    void setIncludedText(const std::string includedText);
-    void setRestrictions(int minCardinality, int maxCardinality);
+    auto setIncludedText(const std::string includedText) -> std::expected<void, std::string>;
+    auto setRestrictions(int minCardinality, int maxCardinality) -> std::expected<void, std::string>;
     void setThreadsNumber();
 
 private:
     //Constructor arguments
-    std::string sourceText;
+    std::string targetText;
     std::string dictionaryName;
     std::string includedText;
     int minCardinality, maxCardinality;
 
     //Processed variables
     std::unique_ptr<Dictionarium> dictionaryPtr;
-    WordSignature sourceTextSignature, includedTextSignature, targetSignature; //targetSignature = sourceTextSignature - includedTextSignature
+    WordSignature targetSignature, includedTextSignature, actualTargetSignature; //actualTargetSignature = targetTextSignature - includedTextSignature
     int includedWordsNumber;
     int effectiveMinCardinality, effectiveMaxCardinality;
     unsigned int supportedConcurrency; //std::thread::hardware_concurrency();

@@ -20,34 +20,47 @@
 int countWords(const std::string &str); //Counts words in a string
 
 //Constructor
-ArmaMagna::ArmaMagna(const std::string &text, const std::string &dictionary, const std::string &included, int mincard, int maxcard)
+ArmaMagna::ArmaMagna()
 {
-    try
-    {
-        setSourceText(text);
-        setDictionaryName(dictionary);
-        setIncludedText(included);
-        setRestrictions(mincard, maxcard);
-        setThreadsNumber();
-    }
-    catch(std::invalid_argument &e) {throw std::invalid_argument(e.what());}
+    //Empty
+}
+
+auto ArmaMagna::setOptions(const std::string &text, const std::string &dictionary, const std::string &included, int mincard, int maxcard)
+    -> std::expected<void, std::string>
+{
+    auto ret = setSourceText(text);
+    if(!ret) {return std::unexpected(ret.error());}
+
+    ret = setIncludedText(included);
+    if(!ret) {return std::unexpected(ret.error());}
+
+    ret = setRestrictions(mincard, maxcard);
+    if(!ret) {return std::unexpected(ret.error());}
+
+    setDictionaryName(dictionary);
+    setThreadsNumber();
+
+    return {};
 }
 
 //Getters
-const std::string &ArmaMagna::getSourceText()     const {return sourceText;}
+const std::string &ArmaMagna::getSourceText()     const {return targetText;}
 const std::string &ArmaMagna::getDictionaryName() const {return dictionaryName;}
 const std::string &ArmaMagna::getIncludedText()   const {return includedText;}
 int ArmaMagna::getMinCardinality()                const {return minCardinality;}
 int ArmaMagna::getMaxCardinality()                const {return maxCardinality;}
 
 //Setters
-void ArmaMagna::setSourceText(const std::string text)
+auto ArmaMagna::setSourceText(const std::string text) -> std::expected<void, std::string>
 {
-    this->sourceText = text;
+    this->targetText = text;
 
-    //Processes the source text and computes its signature
+    //Processes the target text and computes its signature
     auto processedSourceText = StringNormalizer::normalize(text);
-    sourceTextSignature = WordSignature(processedSourceText.value()); //TODO: error check
+    if(!processedSourceText) {return std::unexpected(processedSourceText.error());}
+    this->targetSignature = WordSignature(processedSourceText.value());
+
+    return {};
 }
 
 void ArmaMagna::setDictionaryName(const std::string dictionary)
@@ -55,45 +68,50 @@ void ArmaMagna::setDictionaryName(const std::string dictionary)
     this->dictionaryName = dictionary;
 }
 
-void ArmaMagna::setIncludedText(const std::string included)
+auto ArmaMagna::setIncludedText(const std::string included) -> std::expected<void, std::string>
 {
     this->includedText = included;
 
     //Processes the included text
     auto processedIncludedText = StringNormalizer::normalize(included);
-    includedTextSignature = WordSignature(processedIncludedText.value()); //TODO: error check
+    if(!processedIncludedText) {return std::unexpected(processedIncludedText.error());}
+    includedTextSignature = WordSignature(processedIncludedText.value());
 
     //Computes the number of included words
     if(included == "") includedWordsNumber = 0;
     else               includedWordsNumber = countWords(included);
 
     //Invalid argument checking
-    if(!includedTextSignature.isSubsetOf(sourceTextSignature)) throw std::invalid_argument("the included text must be a subset of the source text");
-    if(sourceTextSignature == includedTextSignature)           throw std::invalid_argument("the included text is already an anagram of the source text");
+    if(!includedTextSignature.isSubsetOf(targetSignature)) {return std::unexpected("The included text must be a subset of the target text");}
+    if(targetSignature == includedTextSignature)           {return std::unexpected("The included is an anagram of the target text");}
 
-    //target = source - included
-    targetSignature = sourceTextSignature;
-    targetSignature -= includedTextSignature;
+    //actual = target - included
+    actualTargetSignature = targetSignature;
+    actualTargetSignature -= includedTextSignature;
 
     //Computes the effective cardinalities
     effectiveMinCardinality = minCardinality - includedWordsNumber;
     effectiveMaxCardinality = maxCardinality - includedWordsNumber;
+
+    return {};
 }
 
-void ArmaMagna::setRestrictions(int mincard, int maxcard)
+auto ArmaMagna::setRestrictions(int mincard, int maxcard) -> std::expected<void, std::string>
 {
     this->minCardinality = mincard;
     this->maxCardinality = maxcard;
 
     //Arguments validity checking
-    if(mincard <= 0 || maxcard <= 0)      throw std::invalid_argument("cardinalities must be positive");
-    if(mincard > maxcard)                 throw std::invalid_argument("maximum cardinality must be greater or equal to minimum cardinality");
-    if(mincard <= includedWordsNumber)    throw std::invalid_argument("minimum cardinality must be greater than the number of included words");
-    if(mincard <= includedWordsNumber)    throw std::invalid_argument("maximum cardinality must be greater than the number of included words");
+    if(mincard <= 0 || maxcard <= 0)      {return std::unexpected("Cardinalities must be positive");}
+    if(mincard > maxcard)                 {return std::unexpected("Maximum cardinality must be greater or equal than minimum cardinality");}
+    if(mincard <= includedWordsNumber)    {return std::unexpected("Minimum cardinality must be greater than the number of included words");}
+    if(mincard <= includedWordsNumber)    {return std::unexpected("Maximum cardinality must be greater than the number of included words");}
 
     //Computes the effective cardinalities
     effectiveMinCardinality = mincard - includedWordsNumber;
     effectiveMaxCardinality = maxcard - includedWordsNumber;
+
+    return {};
 }
 
 void ArmaMagna::setThreadsNumber()
@@ -111,7 +129,7 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
     //Reads the dictionary
     std::print("Reading dictionary...");
     dictionaryPtr = std::make_unique<Dictionarium>();
-    auto wordsRead = dictionaryPtr->readWordList(dictionaryName, sourceText);
+    auto wordsRead = dictionaryPtr->readWordList(dictionaryName, targetText);
     if(!wordsRead) {return std::unexpected(wordsRead.error());}
     std::print(" completed\n");
     std::print("Read {} words", wordsRead.value());
@@ -122,7 +140,7 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
 
         //Computes the power set from the word lengths that are available in the dictionary after filtering
         std::vector<int> availableLengths = dictionaryPtr->getAvailableLengths();
-        RepeatedCombinationsWithSum ps(targetSignature.getCharactersNumber(), effectiveMinCardinality, effectiveMaxCardinality, availableLengths);
+        RepeatedCombinationsWithSum ps(actualTargetSignature.getCharactersNumber(), effectiveMinCardinality, effectiveMaxCardinality, availableLengths);
         size_t powersetsNumber = ps.getSetsNumber();
         
         { 
@@ -217,17 +235,17 @@ void ArmaMagna::print()
 {
     std::println("\nArmaMagna multi-threaded anagrammer engine\n");
 
-    std::println("{:<25}{}", "[*] Source text:",               sourceText);
+    std::println("{:<25}{}", "[*] Source text:",               targetText);
     std::println("{:<25}{}", "[*] Dictionary:",                dictionaryName);
     std::println("{:<25}{}", "[*] Included text:",             includedText.empty() ? "<void>" : includedText);
     std::println("{:<25}({},{})", "[*] Cardinality:",          minCardinality, maxCardinality);
     std::println("{:<25}{}", "[*] Estimated concurrency:",     supportedConcurrency);
     std::println("");
 
-    std::println("{:<25}{}", "[*] Source text signature:",      sourceTextSignature.toString());
+    std::println("{:<25}{}", "[*] Source text signature:",      targetSignature.toString());
     std::println("{:<25}{}", "[*] Included words number:",      includedWordsNumber);
     std::println("{:<25}{}", "[*] Included text signature:",    includedText.empty() ? "<void>" : std::format("{}", includedTextSignature.toString()));
-    std::println("{:<25}{}", "[*] Target signature:",           targetSignature.toString());
+    std::println("{:<25}{}", "[*] Target signature:",           actualTargetSignature.toString());
     std::println("{:<25}({},{})", "[*] Effective cardinality:", effectiveMinCardinality, effectiveMaxCardinality);
     std::println("");
 }
