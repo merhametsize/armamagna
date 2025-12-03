@@ -1,5 +1,4 @@
 #include <unordered_map>  //For std::unorderd_map
-#include <stdexcept>     //For std::invalid_argument and std::exception
 #include <expected>      //For std::expected, std::unexpected
 #include <fstream>      //For std::ifstream
 #include <cassert>     //For assert
@@ -11,17 +10,13 @@
 #include "StringNormalizer.h"
 #include "Dictionarium.h"
 
-Dictionarium::Dictionarium(const std::string &dictionaryName, const std::string &sourceText)
+Dictionarium::Dictionarium()
     : wordsNumber(0), effectiveWordsNumber(0), longestWordLength(0)
 {
-    try
-    {
-        readDictionary(dictionaryName, sourceText);
-    }
-    catch(std::invalid_argument &e) {throw std::invalid_argument(e.what());}
+    //Empty
 }
 
-auto Dictionarium::readDictionary(const std::string &dictionaryName, const std::string &sourceText) -> std::expected<int, std::string>
+auto Dictionarium::readWordList(const std::string &dictionaryName, const std::string &sourceText) -> std::expected<int, std::string>
 {
     //Opens the file
     std::ifstream file(dictionaryName, std::ios::in);

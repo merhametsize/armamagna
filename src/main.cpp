@@ -1,9 +1,5 @@
 #include <iostream>    //For std::cout
-#include <iomanip>     //For std::setw, std::left, std::right
-#include <string>      //For std::string, std::stoi
-#include <stdexcept>   //For std::invalid_argument
-#include <thread>      //For std::thread::hardware_concurrency
-#include <print>       //For std::print
+#include <string>      //For std::string
 
 #include "ArmaMagna.h"
 
@@ -35,12 +31,9 @@ int main(int argc, char **argv)
     CLI11_PARSE(app, argc, argv);
 
     //Starts anagramming
-    try
-    {
-        ArmaMagna am(source, dictionary, includedText, minCardinality, maxCardinality);
-        am.anagram();
-    }
-    catch(std::exception &e) {std::cerr << "[x] Error" << e.what() << std::endl;}
+    ArmaMagna am(source, dictionary, includedText, minCardinality, maxCardinality);
+    auto anagramsFound = am.anagram();
+    if(!anagramsFound) {std::cout << anagramsFound.error() << std::endl; return -1;}
 
     return 0;
 }

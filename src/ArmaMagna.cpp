@@ -1,4 +1,5 @@
 #include <iostream>  //For I/O
+#include <expected>  //For std::expected, std::unexpected
 #include <memory>    //For std::make_unique, std::unique_ptr
 #include <string>    //For std::string
 #include <vector>    //For std::vector
@@ -102,17 +103,18 @@ void ArmaMagna::setThreadsNumber()
     if(supportedConcurrency == 0) supportedConcurrency = 1;
 }
 
-void ArmaMagna::anagram()
+auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
 {
     //Output settings
     this->print();
 
     //Reads the dictionary
     std::print("Reading dictionary...");
-    try {dictionaryPtr = std::make_unique<Dictionarium>(dictionaryName, sourceText);}
-    catch (std::invalid_argument &e) {throw std::invalid_argument(e.what());}
+    dictionaryPtr = std::make_unique<Dictionarium>();
+    auto wordsRead = dictionaryPtr->readWordList(dictionaryName, sourceText);
+    if(!wordsRead) {return std::unexpected(wordsRead.error());}
     std::print(" completed\n");
-    std::print("Read {} words", dictionaryPtr->getWordsNumber());
+    std::print("Read {} words", wordsRead.value());
     std::print(", filtered {}\n\n", dictionaryPtr->getWordsNumber() - dictionaryPtr->getEffectiveWordsNumber());
 
     {   //I/O thread RAII scope
@@ -151,6 +153,8 @@ void ArmaMagna::anagram()
     //Signals the I/O thread that the search is complete
     searchIsComplete.store(true);
     anagramQueueCV.notify_one();
+
+    return this->anagramCount;
 }
 
 void ArmaMagna::ioLoop()

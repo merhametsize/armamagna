@@ -23,7 +23,7 @@ class ArmaMagna
 
 public:
     ArmaMagna(const std::string &text, const std::string &dictionary, const std::string &included, int mincard, int maxcard);
-    void anagram();
+    auto anagram() -> std::expected<unsigned long long, std::string>;
 
     //Getters
     const std::string &getSourceText() const;

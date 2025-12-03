@@ -20,8 +20,7 @@ class Dictionarium
     friend std::ostream &operator<<(std::ostream &os, const Dictionarium &sd);
 
 public:
-    //The constructor needs the source text in order to exclude all words that are not a subset of it
-    Dictionarium(const std::string &dictionaryName, const std::string &sourceText);
+    Dictionarium();
 
     //Getters
     unsigned long getWordsNumber() const;                  //Returns the number of lines in the file
@@ -31,13 +30,14 @@ public:
     const std::vector<std::string>& getWords(const WordSignature &ws) const; //Returns the set of words associated to a signature
     const std::vector<int> getAvailableLengths() const;
 
+    //The source text is needed in order to exclude all words that are not a subset of it
+    auto readWordList(const std::string &dictionaryName, const std::string &sourceText) -> std::expected<int, std::string>;
+
 private:
     unsigned int wordsNumber;
     unsigned int effectiveWordsNumber;
     size_t longestWordLength;
     std::array<Section, MAX_WORD_LENGTH> sections;
-
-    auto readDictionary(const std::string &dictionaryName, const std::string &sourceText) -> std::expected<int, std::string>;
 };
 
 #endif
