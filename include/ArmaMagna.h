@@ -74,8 +74,8 @@ private:
     unsigned long long anagramCount = 0;
 
     //Private functions
-    void print();  //Debug print function
-    void ioLoop();                //Thread that writes anagrams to file
+    void print();                               //Debug print function
+    std::expected<void, std::string> ioLoop(); //Thread that writes anagrams to file
 };
 
 #endif

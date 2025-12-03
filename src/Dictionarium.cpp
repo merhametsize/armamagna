@@ -46,6 +46,7 @@ auto Dictionarium::readWordList(const std::string &dictionaryName, const std::st
         WordSignature ws(normalizedWord.value());
         wordsNumber++;
         if(!ws.isSubsetOf(sourceSignature)) continue; //If the word is not a subset of the text to be anagrammed, skips it
+        effectiveWordsNumber++;
 
         //Refreshes the length of the longest word
         if(wordLength > longestWordLength) longestWordLength = wordLength;

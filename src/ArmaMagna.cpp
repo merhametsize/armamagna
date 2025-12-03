@@ -133,10 +133,10 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
     if(!wordsRead) {return std::unexpected(wordsRead.error());}
     std::print(" completed\n");
     std::print("Read {} words", wordsRead.value());
-    std::print(", filtered {}\n\n", dictionaryPtr->getWordsNumber() - dictionaryPtr->getEffectiveWordsNumber());
+    std::print(", filtered {}\n\n", wordsRead.value() - dictionaryPtr->getEffectiveWordsNumber());
 
     {   //I/O thread RAII scope
-        ioThread = std::jthread(&ArmaMagna::ioLoop, this); //I/O thread is launched
+        ioThread = std::jthread(&ArmaMagna::ioLoop, this); //TODO: std::expected error handling
 
         //Computes the power set from the word lengths that are available in the dictionary after filtering
         std::vector<int> availableLengths = dictionaryPtr->getAvailableLengths();
@@ -175,14 +175,14 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
     return this->anagramCount;
 }
 
-void ArmaMagna::ioLoop()
+auto ArmaMagna::ioLoop() -> std::expected<void, std::string>
 {
     std::string lastDisplayedAnagram = "";
     auto lastDisplayTime =  std::chrono::steady_clock::now();
 
     //Opens the output file
     outputFile.open("anagrams.txt", std::ios::out);
-    if(!outputFile.is_open()) {std::print("[x] Can't open file"); exit(-1); /*TODO: expected value error handling*/}
+    if(!outputFile.is_open()) {return std::unexpected("Cannot open output file");}
 
     bool shouldTerminate = false;
     while(true)
@@ -229,6 +229,7 @@ void ArmaMagna::ioLoop()
 
     std::cout << "\n";
     outputFile.close();
+    return {};
 }
 
 void ArmaMagna::print()
