@@ -2,10 +2,7 @@
 #define WORD_SIGNATURE_H
 
 #include <string>  //For std::string
-#include <ranges>  //For std::views
 #include <array>   //For std::array
-
-class WordSignatureHash;
 
 class WordSignature
 {
@@ -13,7 +10,7 @@ class WordSignature
     friend struct std::hash<WordSignature>; 
 
 public:
-    explicit WordSignature();
+    explicit WordSignature() = default;
     explicit WordSignature(const std::string &string);
 
     //Operators functions
@@ -35,7 +32,6 @@ private:
 template <>
 struct std::hash<WordSignature>
 {
-    ~hash() = default; 
     hash() = default;
 
     size_t operator()(const WordSignature& ws) const noexcept

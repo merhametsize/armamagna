@@ -10,7 +10,7 @@
 #include "WordSignature.h"
 #include "Dictionarium.h"
 #include "StringNormalizer.h"
-#include "PowerSet.h"
+#include "Combinations.h"
 #include "SearchThread.h"
 #include "ArmaMagna.h"
 
@@ -120,7 +120,7 @@ void ArmaMagna::anagram()
 
         //Computes the power set from the word lengths that are available in the dictionary after filtering
         std::vector<int> availableLengths = dictionaryPtr->getAvailableLengths();
-        PowerSet ps(targetSignature.getCharactersNumber(), effectiveMinCardinality, effectiveMaxCardinality, availableLengths);
+        RepeatedCombinationsWithSum ps(targetSignature.getCharactersNumber(), effectiveMinCardinality, effectiveMaxCardinality, availableLengths);
         size_t powersetsNumber = ps.getSetsNumber();
         
         { 
@@ -134,7 +134,7 @@ void ArmaMagna::anagram()
             //Search - Producer section
             for(size_t i=0; i<powersetsNumber; i++)
             {
-                std::vector<int> set = ps.getSet(static_cast<int>(i));
+                std::vector<int> set = ps.getSet(i);
                 
                 boost::asio::post(pool, [this, set]
                     {

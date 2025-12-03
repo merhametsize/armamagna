@@ -1,5 +1,3 @@
-#include <iostream>        //For I/O functions
-#include <algorithm>       //For std::sort
 #include <cassert>         //For assert
 #include <numeric>         //For std::accumulate
 #include <ranges>          //For c++23 std::views::enumerate
@@ -8,13 +6,6 @@
 
 #include "WordSignature.h"
 
-//Default constructor
-WordSignature::WordSignature() : WordSignature("")
-{
-    //emtpy
-    //Initialization is delegated to WordSignature(const std::string &)
-}
-
 //Constructor
 WordSignature::WordSignature(const std::string &word)
 {
@@ -22,8 +13,8 @@ WordSignature::WordSignature(const std::string &word)
     for(const char c : word)  //For each character in the string
     {
         //O(1) table access
-        assert(c>='a' && c<='z'); //Ensures the character is alphabetical
-        table[c - 'a']++; //a-a=0, c-a=2 etc, assuming 'c' is normalized
+        assert(c>='a' && c<='z'); //The input MUST be alphabetical only, and normalized to a-z; no input validation is done for maximum performance
+        table[c - 'a']++;        //a-a=0, c-a=2 etc, assuming 'c' is normalized
     }
 }
 
@@ -65,12 +56,12 @@ int WordSignature::getCharactersNumber() const
 std::string WordSignature::toString() const
 {
     std::string str;
+    str.reserve(this->getCharactersNumber());
     for (const auto &[i, count] : this->table | std::views::enumerate) // C++23 range-for loop with enumerate
     {
         if (count > 0)
         {
             char c = static_cast<char>('a' + i);
-            assert(count <= 40);
             str.append(count, c);
         }
     }

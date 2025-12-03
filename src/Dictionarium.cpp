@@ -3,7 +3,8 @@
 #include <fstream>      //For std::ifstream
 #include <cassert>     //For assert
 #include <string>     //For std::string
-#include <set>       //For std::set
+#include <ranges>    //For std::views
+#include <set>      //For std::set
 
 #include "WordSignature.h"
 #include "StringNormalizer.h"
