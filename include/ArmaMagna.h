@@ -24,7 +24,8 @@ class ArmaMagna
 public:
     ArmaMagna();
     auto anagram() -> std::expected<unsigned long long, std::string>;
-    auto setOptions(const std::string &text, const std::string &dictionary, const std::string &included, int mincard, int maxcard)
+    auto setOptions(const std::string &text, const std::string &dictionary, const std::string& outputFileName, 
+                    const std::string &included, int mincard, int maxcard)
                     -> std::expected<void, std::string>;
 
     //Getters
@@ -47,6 +48,7 @@ private:
     std::string targetText;
     std::string dictionaryName;
     std::string includedText;
+    std::string outputFileName;
     int minCardinality, maxCardinality;
 
     //Processed variables
@@ -67,7 +69,7 @@ private:
 
     //I/O
     std::atomic<bool> searchIsComplete = false; //Flag to signal I/O thread to stop☢️
-    std::ofstream outputFile;
+    std::ofstream ofstream;
     std::jthread ioThread;
 
     //Statistics

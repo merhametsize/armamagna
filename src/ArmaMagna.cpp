@@ -25,7 +25,8 @@ ArmaMagna::ArmaMagna()
     //Empty
 }
 
-auto ArmaMagna::setOptions(const std::string &text, const std::string &dictionary, const std::string &included, int mincard, int maxcard)
+auto ArmaMagna::setOptions(const std::string &text, const std::string &dictionary, const std::string& outputFileName,
+    const std::string &included, int mincard, int maxcard)
     -> std::expected<void, std::string>
 {
     auto ret = setSourceText(text);
@@ -39,6 +40,8 @@ auto ArmaMagna::setOptions(const std::string &text, const std::string &dictionar
 
     setDictionaryName(dictionary);
     setThreadsNumber();
+
+    this->outputFileName = outputFileName;
 
     return {};
 }
@@ -136,8 +139,8 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
     std::print(", filtered {}\n\n", wordsRead.value() - dictionaryPtr->getEffectiveWordsNumber());
 
     //Opens the output file
-    outputFile.open("anagrams.txt", std::ios::out);
-    if(!outputFile.is_open()) {return std::unexpected("Cannot open output file");}
+    this->ofstream.open(this->outputFileName, std::ios::out);
+    if(!this->ofstream.is_open()) {return std::unexpected("Cannot open output file");}
 
     {   //I/O thread RAII scope
         ioThread = std::jthread(&ArmaMagna::ioLoop, this); //TODO: std::expected error handling
@@ -176,7 +179,7 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
     searchIsComplete.store(true);
     anagramQueueCV.notify_one();
 
-    outputFile.close();
+    this->ofstream.close();
     return this->anagramCount;
 }
 
@@ -212,8 +215,8 @@ auto ArmaMagna::ioLoop() -> std::expected<void, std::string>
         /*******************I/O PROCESSING*******************/
         if(!currentAnagram.empty()) //If there's something, output to file
         {
-            outputFile << currentAnagram << std::endl;
-            outputFile.flush();
+            this->ofstream << currentAnagram << std::endl;
+            this->ofstream.flush();
             lastDisplayedAnagram = currentAnagram;
         }
 
@@ -229,7 +232,7 @@ auto ArmaMagna::ioLoop() -> std::expected<void, std::string>
     }
 
     std::cout << "\nAnagrams found: " << this->anagramCount << std::endl;
-    outputFile.close();
+    this->ofstream.close();
     return {};
 }
 

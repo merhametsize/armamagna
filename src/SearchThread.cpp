@@ -96,7 +96,7 @@ void SearchThread::outputSolution(std::vector<std::string> &anagram, int index)
     }
 
     //Recursive part
-    assert(index >= 0 && index < static_cast<int>(solution.size()));
+    assert(index < static_cast<int>(solution.size()));
     const WordSignature wordSignature = solution[index];
     const std::vector<std::string> &words = armaMagna.dictionaryPtr->getWords(wordSignature);
     for(const std::string &word : words)
