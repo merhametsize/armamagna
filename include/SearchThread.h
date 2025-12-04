@@ -27,7 +27,7 @@ private:
 
     void search(int wordIndex);   //Main function, core of the program
     void computeSolution();
-    void outputSolution(std::multiset<std::string> &orderedAnagram, std::vector<std::string> &unorderedAnagram, int index);
+    void outputSolution(std::vector<std::string> &unorderedAnagram, int index);
 };
 
 #endif

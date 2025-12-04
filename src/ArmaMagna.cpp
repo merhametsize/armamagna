@@ -228,7 +228,7 @@ auto ArmaMagna::ioLoop() -> std::expected<void, std::string>
         }
     }
 
-    std::cout << "\n";
+    std::cout << "\nAnagrams found: " << this->anagramCount << std::endl;
     outputFile.close();
     return {};
 }
