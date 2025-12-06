@@ -25,7 +25,7 @@ public:
     ArmaMagna();
     auto anagram() -> std::expected<unsigned long long, std::string>;
     auto setOptions(const std::string &text, const std::string &dictionary, const std::string& outputFileName, 
-                    const std::string &included, int mincard, int maxcard)
+                    const std::string &included, int mincard, int maxcard, int numThreads)
                     -> std::expected<void, std::string>;
 
     //Getters
@@ -41,7 +41,7 @@ public:
     void setDictionaryName(const std::string dictionaryName);
     auto setIncludedText(const std::string includedText) -> std::expected<void, std::string>;
     auto setRestrictions(int minCardinality, int maxCardinality) -> std::expected<void, std::string>;
-    void setThreadsNumber();
+    void setThreadsNumber(unsigned int n);
 
 private:
     //Constructor arguments
@@ -56,7 +56,7 @@ private:
     WordSignature targetSignature, includedTextSignature, actualTargetSignature; //actualTargetSignature = targetTextSignature - includedTextSignature
     int includedWordsNumber;
     int effectiveMinCardinality, effectiveMaxCardinality;
-    unsigned int supportedConcurrency; //std::thread::hardware_concurrency();
+    unsigned int numThreads = std::thread::hardware_concurrency();
 
     /***************SHARED RESOURCES***************/
 

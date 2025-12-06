@@ -26,7 +26,7 @@ ArmaMagna::ArmaMagna()
 }
 
 auto ArmaMagna::setOptions(const std::string &text, const std::string &dictionary, const std::string& outputFileName,
-    const std::string &included, int mincard, int maxcard)
+    const std::string &included, int mincard, int maxcard, int numThreads)
     -> std::expected<void, std::string>
 {
     auto ret = setSourceText(text);
@@ -39,7 +39,7 @@ auto ArmaMagna::setOptions(const std::string &text, const std::string &dictionar
     if(!ret) {return std::unexpected(ret.error());}
 
     setDictionaryName(dictionary);
-    setThreadsNumber();
+    setThreadsNumber(numThreads);
 
     this->outputFileName = outputFileName;
 
@@ -107,8 +107,8 @@ auto ArmaMagna::setRestrictions(int mincard, int maxcard) -> std::expected<void,
     //Arguments validity checking
     if(mincard <= 0 || maxcard <= 0)      {return std::unexpected("Cardinalities must be positive");}
     if(mincard > maxcard)                 {return std::unexpected("Maximum cardinality must be greater or equal than minimum cardinality");}
-    if(mincard <= includedWordsNumber)    {return std::unexpected("Minimum cardinality must be greater than the number of included words");}
-    if(mincard <= includedWordsNumber)    {return std::unexpected("Maximum cardinality must be greater than the number of included words");}
+    if(mincard <= includedWordsNumber)    {return std::unexpected("Minimum cardinality must be >= than the number of included words");}
+    if(maxcard <= includedWordsNumber)    {return std::unexpected("Maximum cardinality must be >= than the number of included words");}
 
     //Computes the effective cardinalities
     effectiveMinCardinality = mincard - includedWordsNumber;
@@ -117,11 +117,11 @@ auto ArmaMagna::setRestrictions(int mincard, int maxcard) -> std::expected<void,
     return {};
 }
 
-void ArmaMagna::setThreadsNumber()
+void ArmaMagna::setThreadsNumber(unsigned int n)
 {
-    //Finds out the number of cpu cores
-    supportedConcurrency = std::thread::hardware_concurrency();
-    if(supportedConcurrency == 0) supportedConcurrency = 1;
+    if(n > std::thread::hardware_concurrency()) this->numThreads = std::thread::hardware_concurrency();
+    else if(n <= 0) this->numThreads = 1;
+    this->numThreads = n;
 }
 
 auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
@@ -152,11 +152,11 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
         
         { 
             //int workersNumber = 1;
-            int workersNumber = (supportedConcurrency > 2) ? supportedConcurrency - 2 : 1;  //2 threads reserved for main and I/O
+            int workersNumber = (numThreads > 2) ? numThreads - 2 : 1;  //2 threads reserved for main and I/O
             boost::asio::thread_pool pool (workersNumber);
 
-            //std::println("[*] Starting {} threads", workersNumber);
-            //std::println("[*] Covering {} powersets", powersetsNumber);
+            std::println("[*] Starting {} threads", workersNumber);
+            std::println("[*] Covering {} powersets", powersetsNumber);
 
             //Search - Producer section
             for(size_t i=0; i<powersetsNumber; i++)
@@ -232,7 +232,6 @@ auto ArmaMagna::ioLoop() -> std::expected<void, std::string>
     }
 
     std::cout << "\nAnagrams found: " << this->anagramCount << std::endl;
-    this->ofstream.close();
     return {};
 }
 
@@ -240,18 +239,19 @@ void ArmaMagna::print()
 {
     std::println("\nArmaMagna multi-threaded anagrammer engine\n");
 
-    std::println("{:<25}{}", "[*] Source text:",               targetText);
-    std::println("{:<25}{}", "[*] Dictionary:",                dictionaryName);
-    std::println("{:<25}{}", "[*] Included text:",             includedText.empty() ? "<void>" : includedText);
-    std::println("{:<25}({},{})", "[*] Cardinality:",          minCardinality, maxCardinality);
-    std::println("{:<25}{}", "[*] Estimated concurrency:",     supportedConcurrency);
+    std::println("{:<40}{}", "[*] Source text:",               targetText);
+    std::println("{:<40}{}", "[*] Dictionary:",                dictionaryName);
+    std::println("{:<40}{}", "[*] Included text:",             includedText.empty() ? "<void>" : includedText);
+    std::println("{:<40}({},{})", "[*] Cardinality:",          minCardinality, maxCardinality);
+    std::println("{:<40}{}", "[*] Estimated concurrency:",     std::thread::hardware_concurrency());
+    std::println("{:<40}{}", "[*] Threads to launch:",         numThreads);
     std::println("");
 
-    std::println("{:<25}{}", "[*] Source text signature:",      targetSignature.toString());
-    std::println("{:<25}{}", "[*] Included words number:",      includedWordsNumber);
-    std::println("{:<25}{}", "[*] Included text signature:",    includedText.empty() ? "<void>" : std::format("{}", includedTextSignature.toString()));
-    std::println("{:<25}{}", "[*] Target signature:",           actualTargetSignature.toString());
-    std::println("{:<25}({},{})", "[*] Effective cardinality:", effectiveMinCardinality, effectiveMaxCardinality);
+    std::println("{:<40}{}", "[*] Source text signature:",      targetSignature.toString());
+    std::println("{:<40}{}", "[*] Included words number:",      includedWordsNumber);
+    std::println("{:<40}{}", "[*] Included text signature:",    includedText.empty() ? "<void>" : std::format("{}", includedTextSignature.toString()));
+    std::println("{:<40}{}", "[*] Target signature:",           actualTargetSignature.toString());
+    std::println("{:<40}({},{})", "[*] Effective cardinality:", effectiveMinCardinality, effectiveMaxCardinality);
     std::println("");
 }
 

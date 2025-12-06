@@ -12,7 +12,7 @@
 //Section[i] only contains words of length i
 using Section = std::unordered_map<WordSignature, std::vector<std::string>>;
 
-const int MAX_WORD_LENGTH = 30; //If a word longer than 'maxWordLength' is found, program terminates
+const int MAX_WORD_LENGTH = 60; //If a word longer than 'maxWordLength' is found, program terminates
 
 class Dictionarium
 {

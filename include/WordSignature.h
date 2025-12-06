@@ -25,7 +25,7 @@ public:
     //Transformers
     std::string toString() const;
 
-private:
+//private:
     std::array<int, 26> table = {}; //Initialized to 0
 };
 

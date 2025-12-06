@@ -308,7 +308,6 @@ it
 italian
 italians
 italy
-j
 jacobus
 jan
 jellis
@@ -318,7 +317,6 @@ jos
 josef
 judit
 junior
-k
 karpov
 kasparov
 kb

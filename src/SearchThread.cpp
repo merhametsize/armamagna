@@ -14,6 +14,8 @@ SearchThread::SearchThread(ArmaMagna &am, const std::vector<int>& wl)
     //Modifies the size of the 'solution' vector, it will be filled with signatures that make a potential anagram
     assert(wordsNumber > 0);
     solution.resize(wordsNumber);
+
+    for(size_t i=0; i<ws.table.size(); i++) assert(ws.table[i] == 0);
 }   
 
 void SearchThread::operator()()
@@ -26,9 +28,10 @@ void SearchThread::operator()()
 void SearchThread::search(int wordIndex)
 {
     //Base case, possible solution found
-    if(wordIndex >= wordsNumber)
+    assert(wordIndex <= wordsNumber);
+    if(wordIndex == wordsNumber)
     {
-        if(ws == armaMagna.targetSignature) computeSolution();
+        if(ws == armaMagna.actualTargetSignature) computeSolution();
         return;
     }
 
@@ -40,7 +43,7 @@ void SearchThread::search(int wordIndex)
         ws += currentSignature;   //Adds the current entry's signature to ws
         if(wordIndex >= 1)       //Pruning block
         {
-            if(!ws.isSubsetOf(armaMagna.targetSignature)) {ws -= currentSignature; continue;}
+            if(!ws.isSubsetOf(armaMagna.actualTargetSignature)) {ws -= currentSignature; continue;}
         }
 
         solution[wordIndex] = currentSignature; //Saves a pointer to the current signature in the 'solution' array
@@ -69,14 +72,16 @@ void SearchThread::computeSolution()
 void SearchThread::outputSolution(std::vector<std::string> &anagram, int index)
 {
     //Base case
+    assert(index <= wordsNumber);
     if(index == wordsNumber)
     {
+        std::vector<std::string> orderedAnagram = anagram;
         std::string canonicalString;
         bool shouldPush = false;
 
         //Formats the output string
-        std::sort(anagram.begin(), anagram.end());
-        for(const std::string &word : anagram) {canonicalString += word; canonicalString += " ";}
+        std::sort(orderedAnagram.begin(), orderedAnagram.end());
+        for(const std::string &word : orderedAnagram) {canonicalString += word; canonicalString += " ";}
         assert(!canonicalString.empty());  
         canonicalString.pop_back(); //Trailing space is removed
 
@@ -97,7 +102,7 @@ void SearchThread::outputSolution(std::vector<std::string> &anagram, int index)
 
     //Recursive part
     assert(index < static_cast<int>(solution.size()));
-    const WordSignature wordSignature = solution[index];
+    const WordSignature& wordSignature = solution[index];
     const std::vector<std::string> &words = armaMagna.dictionaryPtr->getWords(wordSignature);
     for(const std::string &word : words)
     {

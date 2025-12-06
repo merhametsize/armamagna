@@ -18,6 +18,7 @@ int main(int argc, char **argv)
     std::string outputFile   = "anagrams.txt";
     int minCardinality  = -1;
     int maxCardinality  = -1;
+    unsigned int numThreads = std::thread::hardware_concurrency();
 
     CLI::App app("ArmaMagna");
 
@@ -27,6 +28,7 @@ int main(int argc, char **argv)
     app.add_option("--mincard", minCardinality, "Minimum cardinality")->required()->check(CLI::PositiveNumber);
     app.add_option("--maxcard", maxCardinality, "Maximum cardinality")->required()->check(CLI::PositiveNumber);
     app.add_option("-o,--out", outputFile, "Output file");
+    app.add_option("-t,--thr", numThreads, "Number of threads")->check(CLI::PositiveNumber);
     app.footer("Example:\n\tarmamagna \"bazzecole andanti\" -d dizionario-italiano.txt --mincard=1 --maxcard=3\n\n" \
                 "Author: Gabriele Cassetta, @merhametsize");
 
@@ -34,7 +36,7 @@ int main(int argc, char **argv)
 
     //Starts anagramming
     ArmaMagna am;
-    auto ret = am.setOptions(target, dictionary, outputFile, includedText, minCardinality, maxCardinality);
+    auto ret = am.setOptions(target, dictionary, outputFile, includedText, minCardinality, maxCardinality, numThreads);
     if(!ret) {std::cout << ret.error() << std::endl; return -1;}
 
     auto anagramsFound = am.anagram();
