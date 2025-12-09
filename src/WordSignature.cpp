@@ -33,7 +33,6 @@ void WordSignature::operator-=(const WordSignature &ws)
     for(const auto [i, count] : ws.table | std::views::enumerate) //Pipes the container through the enumerate adaptor
     {
         table[i] -= count;
-        assert(table[i] >= 0);
     }
 }
 
