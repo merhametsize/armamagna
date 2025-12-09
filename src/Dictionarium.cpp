@@ -52,7 +52,7 @@ auto Dictionarium::readWordList(const std::string& dictionaryName, const std::st
         if(wordLength > longestWordLength) longestWordLength = wordLength;
 
         //Pushes the word in the right section, with the corresponding signature-key
-        Section &rightSection = sections.at(wordLength);
+        Section& rightSection = sections.at(wordLength);
         rightSection[ws].push_back(word);
     }
 
@@ -74,20 +74,15 @@ size_t Dictionarium::getLongestWordLength() const
     return longestWordLength;
 }
 
-const Section &Dictionarium::getSection(int sectionNumber) const
+const Section& Dictionarium::getSection(int sectionNumber) const
 {
-    //Only assert is used, since this is a performance critical function
-    //assert(sectionNumber > 0 && sectionNumber <= MAX_WORD_LENGTH);
-    return sections.at(sectionNumber);
+    return sections[sectionNumber]; //[] does NOT perform bounds checking, good for performance
 }
 
-const std::vector<std::string> &Dictionarium::getWords(const WordSignature& ws) const
+const std::vector<std::string>& Dictionarium::getWords(const WordSignature& ws) const
 {
     const int charactersNumber = ws.getCharactersNumber(); //Gets the section index
-
-    //Only assert is used, since this is a performance critical function
-    //assert(sections.at(charactersNumber).contains(ws));
-    return sections.at(charactersNumber).at(ws);  //Returns the set of words associated to ws
+    return sections[charactersNumber].at(ws);             //[] does NOT perform bounds checking, good for performance
 }
 
 const std::vector<int> Dictionarium::getAvailableLengths() const 
@@ -100,17 +95,17 @@ const std::vector<int> Dictionarium::getAvailableLengths() const
     return availableLengths;
 }
 
-std::ostream &operator<<(std::ostream& os, const Dictionarium& dict)
+std::ostream& operator<<(std::ostream& os, const Dictionarium& dict)
 {
-    for(const auto &section : dict.sections) //For every section (i.e. word length)
+    for(const auto& section : dict.sections) //For every section (i.e. word length)
     {
-        for(const auto &entry : section)   //For every entry in the section
+        for(const auto& entry : section)   //For every entry in the section
         {
-            const WordSignature &ws = entry.first;     //Get the signature
-            const std::vector<std::string> &words = entry.second;  //Get the set of words associated to that signature
+            const WordSignature& ws = entry.first;     //Get the signature
+            const std::vector<std::string>& words = entry.second;  //Get the set of words associated to that signature
 
             os << ws;                                    //Outputs the signature
-            for(const std::string &word : words) os << " " << word; //Outputs the words
+            for(const std::string& word : words) os << " " << word; //Outputs the words
             os << std::endl;
         }
     }

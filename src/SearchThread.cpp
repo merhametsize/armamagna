@@ -8,7 +8,7 @@
 
 #include "SearchThread.h"
 
-SearchThread::SearchThread(ArmaMagna &am, const std::vector<int>& wl)
+SearchThread::SearchThread(ArmaMagna& am, const std::vector<int>& wl)
     : armaMagna(am), wordLengths(wl), wordsNumber(static_cast<int>(wordLengths.size()))
 {
     //Modifies the size of the 'solution' vector, it will be filled with signatures that make a potential anagram
@@ -36,9 +36,9 @@ void SearchThread::search(int wordIndex)
     }
 
     //Iterates through every entry of the dictionary section contained in wordLengths[wordsIndex]
-    for(const auto &entry : armaMagna.dictionary.getSection(wordLengths[wordIndex]))
+    for(const auto& entry : armaMagna.dictionary.getSection(wordLengths[wordIndex]))
     {
-        const WordSignature &currentSignature = entry.first; //Gets the current signature
+        const WordSignature& currentSignature = entry.first; //Gets the current signature
 
         ws += currentSignature;   //Adds the current entry's signature to ws
         if(wordIndex >= 1)       //Pruning block
@@ -69,7 +69,7 @@ void SearchThread::computeSolution()
     outputSolution(anagram, 0); //Recursive function
 }
 
-void SearchThread::outputSolution(std::vector<std::string> &anagram, int index)
+void SearchThread::outputSolution(std::vector<std::string>& anagram, int index)
 {
     //Base case
     assert(index <= wordsNumber);
@@ -81,7 +81,7 @@ void SearchThread::outputSolution(std::vector<std::string> &anagram, int index)
 
         //Formats the output string
         std::sort(orderedAnagram.begin(), orderedAnagram.end());
-        for(const std::string &word : orderedAnagram) {canonicalString += word; canonicalString += " ";}
+        for(const std::string& word : orderedAnagram) {canonicalString += word; canonicalString += " ";}
         assert(!canonicalString.empty());  
         canonicalString.pop_back(); //Trailing space is removed
 
