@@ -16,7 +16,7 @@ Dictionarium::Dictionarium()
     //Empty
 }
 
-auto Dictionarium::readWordList(const std::string &dictionaryName, const std::string &sourceText) -> std::expected<int, std::string>
+auto Dictionarium::readWordList(const std::string& dictionaryName, const std::string& sourceText) -> std::expected<int, std::string>
 {
     //Opens the file
     std::ifstream file(dictionaryName, std::ios::in);
@@ -81,7 +81,7 @@ const Section &Dictionarium::getSection(int sectionNumber) const
     return sections.at(sectionNumber);
 }
 
-const std::vector<std::string> &Dictionarium::getWords(const WordSignature &ws) const
+const std::vector<std::string> &Dictionarium::getWords(const WordSignature& ws) const
 {
     const int charactersNumber = ws.getCharactersNumber(); //Gets the section index
 
@@ -100,7 +100,7 @@ const std::vector<int> Dictionarium::getAvailableLengths() const
     return availableLengths;
 }
 
-std::ostream &operator<<(std::ostream &os, const Dictionarium &dict)
+std::ostream &operator<<(std::ostream& os, const Dictionarium& dict)
 {
     for(const auto &section : dict.sections) //For every section (i.e. word length)
     {

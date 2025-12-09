@@ -36,7 +36,7 @@ void SearchThread::search(int wordIndex)
     }
 
     //Iterates through every entry of the dictionary section contained in wordLengths[wordsIndex]
-    for(const auto &entry : armaMagna.dictionaryPtr->getSection(wordLengths[wordIndex]))
+    for(const auto &entry : armaMagna.dictionary.getSection(wordLengths[wordIndex]))
     {
         const WordSignature &currentSignature = entry.first; //Gets the current signature
 
@@ -103,7 +103,7 @@ void SearchThread::outputSolution(std::vector<std::string> &anagram, int index)
     //Recursive part
     assert(index < static_cast<int>(solution.size()));
     const WordSignature& wordSignature = solution[index];
-    const std::vector<std::string> &words = armaMagna.dictionaryPtr->getWords(wordSignature);
+    const std::vector<std::string> &words = armaMagna.dictionary.getWords(wordSignature);
     for(const std::string &word : words)
     {
         anagram.push_back(word);

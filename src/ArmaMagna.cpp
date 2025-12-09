@@ -50,8 +50,6 @@ auto ArmaMagna::setOptions(const std::string &text, const std::string &dictionar
 const std::string &ArmaMagna::getSourceText()     const {return targetText;}
 const std::string &ArmaMagna::getDictionaryName() const {return dictionaryName;}
 const std::string &ArmaMagna::getIncludedText()   const {return includedText;}
-int ArmaMagna::getMinCardinality()                const {return minCardinality;}
-int ArmaMagna::getMaxCardinality()                const {return maxCardinality;}
 
 //Setters
 auto ArmaMagna::setSourceText(const std::string text) -> std::expected<void, std::string>
@@ -89,30 +87,30 @@ auto ArmaMagna::setIncludedText(const std::string included) -> std::expected<voi
     if(targetSignature == includedTextSignature)           {return std::unexpected("The included is an anagram of the target text");}
 
     //actual = target - included
-    actualTargetSignature = targetSignature;
+    actualTargetSignature = targetSignature; 
     actualTargetSignature -= includedTextSignature;
 
     //Computes the effective cardinalities
-    effectiveMinCardinality = minCardinality - includedWordsNumber;
-    effectiveMaxCardinality = maxCardinality - includedWordsNumber;
+    actualMinCardinality = minCardinality - includedWordsNumber;
+    actualMaxCardinality = maxCardinality - includedWordsNumber;
 
     return {};
 }
 
 auto ArmaMagna::setRestrictions(int mincard, int maxcard) -> std::expected<void, std::string>
 {
-    this->minCardinality = mincard;
-    this->maxCardinality = maxcard;
-
     //Arguments validity checking
     if(mincard <= 0 || maxcard <= 0)      {return std::unexpected("Cardinalities must be positive");}
     if(mincard > maxcard)                 {return std::unexpected("Maximum cardinality must be greater or equal than minimum cardinality");}
     if(mincard <= includedWordsNumber)    {return std::unexpected("Minimum cardinality must be >= than the number of included words");}
     if(maxcard <= includedWordsNumber)    {return std::unexpected("Maximum cardinality must be >= than the number of included words");}
 
-    //Computes the effective cardinalities
-    effectiveMinCardinality = mincard - includedWordsNumber;
-    effectiveMaxCardinality = maxcard - includedWordsNumber;
+    this->minCardinality = mincard;
+    this->maxCardinality = maxcard;
+
+    //Computes the actual cardinalities
+    actualMinCardinality = mincard - includedWordsNumber;
+    actualMaxCardinality = maxcard - includedWordsNumber;
 
     return {};
 }
@@ -131,12 +129,11 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
 
     //Reads the dictionary
     std::print("Reading dictionary...");
-    dictionaryPtr = std::make_unique<Dictionarium>();
-    auto wordsRead = dictionaryPtr->readWordList(dictionaryName, targetText);
+    auto wordsRead = dictionary.readWordList(dictionaryName, targetText);
     if(!wordsRead) {return std::unexpected(wordsRead.error());}
     std::print(" completed\n");
     std::print("Read {} words", wordsRead.value());
-    std::print(", filtered {}\n\n", wordsRead.value() - dictionaryPtr->getEffectiveWordsNumber());
+    std::print(", after filter {}\n\n", dictionary.getEffectiveWordsNumber());
 
     //Opens the output file
     this->ofstream.open(this->outputFileName, std::ios::out);
@@ -146,33 +143,31 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
         ioThread = std::jthread(&ArmaMagna::ioLoop, this); //TODO: std::expected error handling
 
         //Computes the power set from the word lengths that are available in the dictionary after filtering
-        std::vector<int> availableLengths = dictionaryPtr->getAvailableLengths();
-        RepeatedCombinationsWithSum ps(actualTargetSignature.getCharactersNumber(), effectiveMinCardinality, effectiveMaxCardinality, availableLengths);
+        std::vector<int> availableLengths = dictionary.getAvailableLengths();
+        RepeatedCombinationsWithSum ps(actualTargetSignature.getCharactersNumber(), actualMinCardinality, actualMaxCardinality, availableLengths);
         size_t powersetsNumber = ps.getSetsNumber();
         
-        { 
-            //int workersNumber = 1;
-            int workersNumber = (numThreads > 2) ? numThreads - 2 : 1;  //2 threads reserved for main and I/O
-            boost::asio::thread_pool pool (workersNumber);
+        int workersNumber = (numThreads > 2) ? numThreads - 2 : 1;  //2 threads reserved for main and I/O
+        boost::asio::thread_pool pool(workersNumber);
 
-            std::println("[*] Starting {} threads", workersNumber);
-            std::println("[*] Covering {} powersets", powersetsNumber);
+        std::println("[*] Starting {} threads", workersNumber);
+        std::println("[*] Covering {} powersets", powersetsNumber);
 
-            //Search - Producer section
-            for(size_t i=0; i<powersetsNumber; i++)
-            {
-                std::vector<int> set = ps.getSet(i);
-                
-                boost::asio::post(pool, [this, set]
-                    {
-                        SearchThread searchThread(*this, set);
-                        searchThread();
-                    }
-                );
-            }
-
-            pool.join();
+        //Search - Producer section
+        for(size_t i=0; i<powersetsNumber; i++)
+        {
+            std::vector<int> set = ps.getSet(i);
+            
+            boost::asio::post(pool, [this, set]
+                {
+                    SearchThread searchThread(*this, set);
+                    searchThread();
+                }
+            );
         }
+
+        pool.join();
+        
     }   //I/O thread destroyed here
 
     //Signals the I/O thread that the search is complete
@@ -195,7 +190,7 @@ auto ArmaMagna::ioLoop() -> std::expected<void, std::string>
 
         /*******************CONSUMER CRITICAL SECTION*******************/
         {
-            std::unique_lock<std::mutex> lock(anagramQueueMutex);
+            std::unique_lock<std::mutex> lock(anagramQueueMutex); //unique_lock is needed because of CV.wait()
             
             //Wait for data to arrive or the termination signal
             auto exitFunction = [this] {return !anagramQueue.empty() || searchIsComplete.load();};
@@ -251,7 +246,7 @@ void ArmaMagna::print()
     std::println("{:<40}{}", "[*] Included words number:",      includedWordsNumber);
     std::println("{:<40}{}", "[*] Included text signature:",    includedText.empty() ? "<void>" : std::format("{}", includedTextSignature.toString()));
     std::println("{:<40}{}", "[*] Target signature:",           actualTargetSignature.toString());
-    std::println("{:<40}({},{})", "[*] Effective cardinality:", effectiveMinCardinality, effectiveMaxCardinality);
+    std::println("{:<40}({},{})", "[*] Effective cardinality:", actualMinCardinality, actualMaxCardinality);
     std::println("");
 }
 

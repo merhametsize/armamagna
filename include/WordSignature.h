@@ -7,18 +7,19 @@
 
 class WordSignature
 {
-    friend std::ostream &operator<<(std::ostream &ostream, const WordSignature &ws);
+    friend std::ostream& operator<<(std::ostream& ostream, const WordSignature& ws);
     friend struct std::hash<WordSignature>; 
 
 public:
     explicit WordSignature() = default;
-    explicit WordSignature(const std::string &string);
+    explicit WordSignature(const WordSignature& other) = default;
+    explicit WordSignature(const std::string& string);
 
     //Operators functions
-    void operator+=(const WordSignature &ws);
-    void operator-=(const WordSignature &ws);
-    auto operator<=>(const WordSignature &ws) const = default;
-    bool isSubsetOf(const WordSignature &ws) const;
+    void operator+=(const WordSignature& ws);
+    void operator-=(const WordSignature& ws);
+    auto operator<=>(const WordSignature& ws) const = default;
+    bool isSubsetOf(const WordSignature& ws) const;
 
     //Getters
     int getCharactersNumber() const;

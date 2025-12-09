@@ -32,9 +32,6 @@ public:
     const std::string &getSourceText() const;
     const std::string &getDictionaryName() const;
     const std::string &getIncludedText() const;
-    int getMinCardinality() const;
-    int getMaxCardinality() const;
-    int getThreadsNumber() const;
 
     //Setters
     auto setSourceText(const std::string targetText) -> std::expected<void, std::string>;
@@ -46,17 +43,17 @@ public:
 private:
     //Constructor arguments
     std::string targetText;
-    std::string dictionaryName;
     std::string includedText;
+    std::string dictionaryName;
     std::string outputFileName;
     int minCardinality, maxCardinality;
 
     //Processed variables
-    std::unique_ptr<Dictionarium> dictionaryPtr;
+    Dictionarium dictionary; //Shared but read-only for threads
     WordSignature targetSignature, includedTextSignature, actualTargetSignature; //actualTargetSignature = targetTextSignature - includedTextSignature
     int includedWordsNumber;
-    int effectiveMinCardinality, effectiveMaxCardinality;
-    unsigned int numThreads = std::thread::hardware_concurrency();
+    int actualMinCardinality, actualMaxCardinality;
+    unsigned int numThreads;
 
     /***************SHARED RESOURCES***************/
 
