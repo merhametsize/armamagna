@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Include directories
 include_directories(include)
+include_directories(include/ankerl)
 
 # Source files
 file(GLOB SOURCES "src/*.cpp")

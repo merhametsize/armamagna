@@ -31,23 +31,27 @@ public:
     std::array<uint8_t, 26> table = {}; //Initialized to 0
 };
 
-template <>
+template<>
 struct std::hash<WordSignature>
 {
-    hash() = default;
-
     size_t operator()(const WordSignature& ws) const noexcept
     {
-        size_t seed = 0;
-        std::hash<int> hasher;
-        
-        //This constant is a magic number used in hash combining
-        const size_t HASH_MAGIC = 0x9e3779b9; 
+        const uint64_t* p = reinterpret_cast<const uint64_t*>(ws.table.data());
+        //26 bytes → 3 chunks (24 bytes) + 2 leftover bytes
 
-        //Combine the current seed with the hash of the current count
-        for (int count : ws.table) {seed ^= hasher(count) + HASH_MAGIC + (seed << 6) + (seed >> 2);}
-        
-        return seed;
+        uint64_t h = 0x9e3779b97f4a7c15ull;
+
+        h ^= p[0] * 0xbf58476d1ce4e5b9ull;
+        h = (h << 31) | (h >> 33);
+
+        h ^= p[1] * 0x94d049bb133111ebull;
+        h = (h << 27) | (h >> 37);
+
+        // Last chunk is 8 bytes, but only 2 contain real data — still safe.
+        h ^= p[2] * 0xd6e8feb86659fd93ull;
+        h = (h << 33) | (h >> 31);
+
+        return h;
     }
 };
 

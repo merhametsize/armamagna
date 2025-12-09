@@ -1,16 +1,16 @@
 #ifndef DICTIONARIUM_H
 #define DICTIONARIUM_H
 
-#include <unordered_map>  //For std::unordered_map
 #include <expected>      //For std::expected, std::unexpected
 #include <string>       //For std::string
 #include <vector>      //For std::vector
 
+#include "ankerl/unordered_dense.h"
 #include "WordSignature.h"
 
 //Every section of the dictionary is a map that associates a signature with 1 or more words
 //Section[i] only contains words of length i
-using Section = std::unordered_map<WordSignature, std::vector<std::string>>;
+using Section = ankerl::unordered_dense::map<WordSignature, std::vector<std::string>>;
 
 const int MAX_WORD_LENGTH = 60; //If a word longer than 'maxWordLength' is found, program terminates
 

@@ -1,10 +1,10 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
-#include <unordered_set>    //For std::unordered_set
 #include <string>          //For std::string
 #include <vector>         //For std::vector
 
+#include "ankerl/unordered_dense.h"
 #include "WordSignature.h"
 #include "ArmaMagna.h"
 
@@ -23,7 +23,7 @@ private:
     int wordsNumber;                               //Number of words of which the anagram will be made of
     WordSignature ws;                             //Dummy signature, used in the recursive search algorithm
     std::vector<WordSignature> solution;         //Array of pointers to a signature, will contain the pointers to signatures that make a solution
-    std::unordered_set<std::string> anagramSet; //Local collection of anagrams found by this search thread
+    ankerl::unordered_dense::set<std::string> anagramSet; //Local collection of anagrams found by this search thread
 
     void search(int wordIndex);   //Main function, core of the program
     void computeSolution();

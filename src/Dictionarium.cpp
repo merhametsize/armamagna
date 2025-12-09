@@ -1,4 +1,3 @@
-#include <unordered_map>  //For std::unorderd_map
 #include <expected>      //For std::expected, std::unexpected
 #include <fstream>      //For std::ifstream
 #include <cassert>     //For assert
@@ -6,6 +5,7 @@
 #include <ranges>    //For std::views
 #include <set>      //For std::set
 
+#include "ankerl/unordered_dense.h"
 #include "WordSignature.h"
 #include "StringNormalizer.h"
 #include "Dictionarium.h"
@@ -53,7 +53,7 @@ auto Dictionarium::readWordList(const std::string& dictionaryName, const std::st
 
         //Pushes the word in the right section, with the corresponding signature-key
         Section &rightSection = sections.at(wordLength);
-        rightSection[ws].push_back(std::move(word));
+        rightSection[ws].push_back(word);
     }
 
     return wordsNumber;
