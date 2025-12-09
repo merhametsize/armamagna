@@ -1,7 +1,8 @@
 #ifndef WORD_SIGNATURE_H
 #define WORD_SIGNATURE_H
 
-#include <string>  //For std::string
+#include <cstdint>   //For uint8_t
+#include <string>   //For std::string
 #include <array>   //For std::array
 
 class WordSignature
@@ -26,7 +27,7 @@ public:
     std::string toString() const;
 
 //private:
-    std::array<int, 26> table = {}; //Initialized to 0
+    std::array<uint8_t, 26> table = {}; //Initialized to 0
 };
 
 template <>

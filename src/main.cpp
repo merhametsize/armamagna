@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     app.add_option("--maxcard", maxCardinality, "Maximum cardinality")->required()->check(CLI::PositiveNumber);
     app.add_option("-o,--out", outputFile, "Output file");
     app.add_option("-t,--thr", numThreads, "Number of threads")->check(CLI::PositiveNumber);
-    app.footer("Example:\n\tarmamagna \"bazzecole andanti\" -d dizionario-italiano.txt --mincard=1 --maxcard=3\n\n" \
+    app.footer("Example:\n\tarmamagna \"bazzecole andanti\" -d it.txt --mincard=1 --maxcard=3\n\n" \
                 "Author: Gabriele Cassetta, @merhametsize");
 
     CLI11_PARSE(app, argc, argv);
