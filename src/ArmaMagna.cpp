@@ -153,6 +153,8 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
         std::println("[*] Starting {} threads", workersNumber);
         std::println("[*] Covering {} powersets", powersetsNumber);
 
+        auto startTime = std::chrono::steady_clock::now();
+
         //Search - Producer section
         for(size_t i=0; i<powersetsNumber; i++)
         {
@@ -167,6 +169,10 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
         }
 
         pool.join();
+
+        auto endTime = std::chrono::steady_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = endTime - startTime;
+        std::println("\n[*] Search time: {}", elapsed.count());
         
     }   //I/O thread destroyed here
 
@@ -217,7 +223,7 @@ auto ArmaMagna::ioLoop() -> std::expected<void, std::string>
 
         //Update console every 1 second
         auto now = std::chrono::steady_clock::now();
-        if(now - lastDisplayTime >= std::chrono::seconds(1))
+        if(now - lastDisplayTime >= std::chrono::milliseconds(500))
         {
             std::print("\r[{}] {}{}", anagramCount, lastDisplayedAnagram, std::string(30, ' '));
             std::cout << std::flush;
