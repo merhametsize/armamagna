@@ -11,7 +11,7 @@
 #include "Dictionarium.h"
 
 Dictionarium::Dictionarium()
-    : wordsNumber(0), effectiveWordsNumber(0), longestWordLength(0)
+    : wordsNumber(0), actualWordsNumber(0), longestWordLength(0)
 {
     //Empty
 }
@@ -46,7 +46,7 @@ auto Dictionarium::readWordList(const std::string& dictionaryName, const std::st
         WordSignature ws(normalizedWord.value());
         wordsNumber++;
         if(!ws.isSubsetOf(sourceSignature)) continue; //If the word is not a subset of the text to be anagrammed, skips it
-        effectiveWordsNumber++;
+        actualWordsNumber++;
 
         //Refreshes the length of the longest word
         if(wordLength > longestWordLength) longestWordLength = wordLength;
@@ -64,9 +64,9 @@ unsigned long Dictionarium::getWordsNumber() const
     return wordsNumber;
 }
 
-unsigned long Dictionarium::getEffectiveWordsNumber() const
+unsigned long Dictionarium::getActualWordsNumber() const
 {
-    return effectiveWordsNumber;
+    return actualWordsNumber;
 }
 
 size_t Dictionarium::getLongestWordLength() const

@@ -24,7 +24,7 @@ public:
 
     //Getters
     unsigned long getWordsNumber() const;                  //Returns the number of lines in the file
-    unsigned long getEffectiveWordsNumber() const;        //Returns the number of non-excluded words in the dictionary
+    unsigned long getActualWordsNumber() const;        //Returns the number of non-excluded words in the dictionary
     size_t getLongestWordLength() const;                 //Returns the length of its longest word. Needed when creating the powerset
     const Section& getSection(int sectionNumber) const; //Returns a dictionary section. Needed in the search algorithm to iterate through signtures
     const std::vector<std::string>& getWords(const WordSignature &ws) const; //Returns the set of words associated to a signature
@@ -35,7 +35,7 @@ public:
 
 private:
     unsigned int wordsNumber;
-    unsigned int effectiveWordsNumber;
+    unsigned int actualWordsNumber;
     size_t longestWordLength;
     std::array<Section, MAX_WORD_LENGTH> sections;
 };

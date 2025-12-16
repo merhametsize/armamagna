@@ -123,37 +123,34 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
     this->print();
 
     //Reads the dictionary
-    std::print("Reading dictionary...");
     auto wordsRead = dictionary.readWordList(dictionaryName, targetText);
     if(!wordsRead) {return std::unexpected(wordsRead.error());}
-    std::print(" completed\n");
-    std::print("Read {} words", wordsRead.value());
-    std::print(", after filter {}\n\n", dictionary.getEffectiveWordsNumber());
+    std::print("[*] Read {} words from dictionary, ", wordsRead.value());
+    std::print(", after filter {}\n\n", dictionary.getActualWordsNumber());
 
     //Opens the output file
     this->ofstream.open(this->outputFileName, std::ios::out);
     if(!this->ofstream.is_open()) {return std::unexpected("Cannot open output file");}
 
+    auto startTime = std::chrono::steady_clock::now();
     {   //I/O thread RAII scope
         ioThread = std::jthread(&ArmaMagna::ioLoop, this);
 
         //Computes the power set from the word lengths that are available in the dictionary after filtering
         std::vector<int> availableLengths = dictionary.getAvailableLengths();
-        RepeatedCombinationsWithSum ps(actualTargetSignature.getCharactersNumber(), actualMinCardinality, actualMaxCardinality, availableLengths);
-        size_t powersetsNumber = ps.getSetsNumber();
+        RepeatedCombinationsWithSum rcs(actualTargetSignature.getCharactersNumber(), actualMinCardinality, actualMaxCardinality, availableLengths);
+        size_t combinationsNumber = rcs.getSetsNumber();
         
         int workersNumber = (numThreads > 2) ? numThreads - 2 : 1;  //2 threads reserved for main and I/O
         boost::asio::thread_pool pool(workersNumber);
 
-        std::println("[*] Starting {} threads", workersNumber);
-        std::println("[*] Covering {} powersets", powersetsNumber);
-
-        auto startTime = std::chrono::steady_clock::now();
+        std::println("[*] Starting {} search threads", workersNumber);
+        std::println("[*] Covering {} length combinations\n", combinationsNumber);
 
         //Search - Producer section
-        for(size_t i=0; i<powersetsNumber; i++)
+        for(size_t i=0; i<combinationsNumber; i++)
         {
-            std::vector<int> set = ps.getSet(i);
+            std::vector<int> set = rcs.getSet(i);
             
             boost::asio::post(pool, [this, set]
                 {
@@ -164,16 +161,15 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
         }
 
         pool.join();
-
-        auto endTime = std::chrono::steady_clock::now();
-        std::chrono::duration<double, std::milli> elapsed = endTime - startTime;
-        std::println("\n[*] Search time: {:.2f} s", elapsed.count()/1000);
-        
     }   //I/O thread destroyed here
 
     //Signals the I/O thread that the search is complete
     searchIsComplete.store(true);
     anagramQueueCV.notify_one();
+
+    auto endTime = std::chrono::steady_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = endTime - startTime;
+    std::println("[*] Search time: {:.2f} s", elapsed.count()/1000);
 
     this->ofstream.close();
     return this->anagramCount;
@@ -184,10 +180,9 @@ void ArmaMagna::ioLoop()
     auto lastDisplayTime =  std::chrono::steady_clock::now();
 
     bool shouldTerminate = false;
+    std::string currentAnagram;
     while(true)
     {
-        std::string currentAnagram;
-
         /*******************CONSUMER CRITICAL SECTION*******************/
         {
             std::unique_lock<std::mutex> lock(anagramQueueMutex); //unique_lock is needed because of CV.wait()
@@ -199,7 +194,7 @@ void ArmaMagna::ioLoop()
             if(searchIsComplete.load() && anagramQueue.empty()) shouldTerminate = true; //Can't call "break" here because of lock RAII
             else if(!anagramQueue.empty())
             {
-                anagramCount++;
+                this->anagramCount++;
                 currentAnagram = anagramQueue.front();
                 anagramQueue.pop();
             }
@@ -218,13 +213,15 @@ void ArmaMagna::ioLoop()
         auto now = std::chrono::steady_clock::now();
         if(now - lastDisplayTime >= std::chrono::milliseconds(1000))
         {
-            std::print("\r[{}] {}{}", anagramCount, currentAnagram, std::string(30, ' '));
+            std::print("\r[{}] {}{}", this->anagramCount, currentAnagram, std::string(30, ' '));
             std::cout << std::flush;
             lastDisplayTime = now;
         }
     }
 
-    std::cout << "\nAnagrams found: " << this->anagramCount << std::endl;
+    std::print("\r[{}] {}{}", this->anagramCount, currentAnagram, std::string(30, ' '));
+    std::cout << std::flush;
+    std::println("\n\n[*] Found {} anagrams, output in {}", this->anagramCount, this->outputFileName);
     return;
 }
 
