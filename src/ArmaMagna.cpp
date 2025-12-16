@@ -139,16 +139,16 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
         //Computes the power set from the word lengths that are available in the dictionary after filtering
         std::vector<int> availableLengths = dictionary.getAvailableLengths();
         RepeatedCombinationsWithSum rcs(actualTargetSignature.getCharactersNumber(), actualMinCardinality, actualMaxCardinality, availableLengths);
-        size_t combinationsNumber = rcs.getSetsNumber();
+        this->setsNumber = rcs.getSetsNumber();
         
         int workersNumber = (numThreads > 2) ? numThreads - 2 : 1;  //2 threads reserved for main and I/O
         boost::asio::thread_pool pool(workersNumber);
 
         std::println("[*] Starting {} search threads", workersNumber);
-        std::println("[*] Covering {} length combinations\n", combinationsNumber);
+        std::println("[*] Covering {} length combinations\n", this->setsNumber);
 
         //Search - Producer section
-        for(size_t i=0; i<combinationsNumber; i++)
+        for(size_t i=0; i<this->setsNumber; i++)
         {
             std::vector<int> set = rcs.getSet(i);
             
@@ -156,6 +156,7 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
                 {
                     SearchThread searchThread(*this, set);
                     searchThread();
+                    this->exploredSetsNumber++; //☢️
                 }
             );
         }
@@ -213,13 +214,13 @@ void ArmaMagna::ioLoop()
         auto now = std::chrono::steady_clock::now();
         if(now - lastDisplayTime >= std::chrono::milliseconds(1000))
         {
-            std::print("\r[{}] {}{}", this->anagramCount, currentAnagram, std::string(30, ' '));
+            std::print("\r[{}/{} sets] {}: {}{}", this->exploredSetsNumber.load(), this->setsNumber, this->anagramCount, currentAnagram, std::string(30, ' '));
             std::cout << std::flush;
             lastDisplayTime = now;
         }
     }
 
-    std::print("\r[{}] {}{}", this->anagramCount, currentAnagram, std::string(30, ' '));
+    std::print("\r[{}/{} sets] {}: {}{}", this->exploredSetsNumber.load(), this->setsNumber, this->anagramCount, currentAnagram, std::string(30, ' '));
     std::cout << std::flush;
     std::println("\n\n[*] Found {} anagrams, output in {}", this->anagramCount, this->outputFileName);
     return;

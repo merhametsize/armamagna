@@ -66,6 +66,8 @@ private:
 
     //Statistics
     unsigned long long anagramCount = 0;
+    size_t setsNumber = 0;                       //Number of repeated combinations with sum found
+    std::atomic<size_t> exploredSetsNumber = 0; //Progress index, incremented at the end of each search thread☢️
 
     //Private functions
     void print();                               //Debug print function
