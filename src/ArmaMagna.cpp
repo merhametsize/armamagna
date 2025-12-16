@@ -29,7 +29,7 @@ auto ArmaMagna::setOptions(const std::string &text, const std::string &dictionar
     const std::string &included, int mincard, int maxcard, int numThreads)
     -> std::expected<void, std::string>
 {
-    auto ret = setSourceText(text);
+    auto ret = setTargetText(text);
     if(!ret) {return std::unexpected(ret.error());}
 
     ret = setIncludedText(included);
@@ -46,20 +46,15 @@ auto ArmaMagna::setOptions(const std::string &text, const std::string &dictionar
     return {};
 }
 
-//Getters
-const std::string &ArmaMagna::getSourceText()     const {return targetText;}
-const std::string &ArmaMagna::getDictionaryName() const {return dictionaryName;}
-const std::string &ArmaMagna::getIncludedText()   const {return includedText;}
-
 //Setters
-auto ArmaMagna::setSourceText(const std::string text) -> std::expected<void, std::string>
+auto ArmaMagna::setTargetText(const std::string text) -> std::expected<void, std::string>
 {
     this->targetText = text;
 
     //Processes the target text and computes its signature
-    auto processedSourceText = StringNormalizer::normalize(text);
-    if(!processedSourceText) {return std::unexpected(processedSourceText.error());}
-    this->targetSignature = WordSignature(processedSourceText.value());
+    auto processedTargetText = StringNormalizer::normalize(text);
+    if(!processedTargetText) {return std::unexpected(processedTargetText.error());}
+    this->targetSignature = WordSignature(processedTargetText.value());
 
     return {};
 }
@@ -140,7 +135,7 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
     if(!this->ofstream.is_open()) {return std::unexpected("Cannot open output file");}
 
     {   //I/O thread RAII scope
-        ioThread = std::jthread(&ArmaMagna::ioLoop, this); //TODO: std::expected error handling
+        ioThread = std::jthread(&ArmaMagna::ioLoop, this);
 
         //Computes the power set from the word lengths that are available in the dictionary after filtering
         std::vector<int> availableLengths = dictionary.getAvailableLengths();
@@ -172,7 +167,7 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
 
         auto endTime = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::milli> elapsed = endTime - startTime;
-        std::println("\n[*] Search time: {}", elapsed.count());
+        std::println("\n[*] Search time: {:.2f} s", elapsed.count()/1000);
         
     }   //I/O thread destroyed here
 
@@ -184,9 +179,8 @@ auto ArmaMagna::anagram() -> std::expected<unsigned long long, std::string>
     return this->anagramCount;
 }
 
-auto ArmaMagna::ioLoop() -> std::expected<void, std::string>
+void ArmaMagna::ioLoop()
 {
-    std::string lastDisplayedAnagram = "";
     auto lastDisplayTime =  std::chrono::steady_clock::now();
 
     bool shouldTerminate = false;
@@ -218,29 +212,27 @@ auto ArmaMagna::ioLoop() -> std::expected<void, std::string>
         {
             this->ofstream << currentAnagram << std::endl;
             this->ofstream.flush();
-            lastDisplayedAnagram = currentAnagram;
         }
 
         //Update console every 1 second
         auto now = std::chrono::steady_clock::now();
-        if(now - lastDisplayTime >= std::chrono::milliseconds(500))
+        if(now - lastDisplayTime >= std::chrono::milliseconds(1000))
         {
-            std::print("\r[{}] {}{}", anagramCount, lastDisplayedAnagram, std::string(30, ' '));
+            std::print("\r[{}] {}{}", anagramCount, currentAnagram, std::string(30, ' '));
             std::cout << std::flush;
-            //std::cout << "\r" <<  << lastDisplayedAnagram << std::flush;
             lastDisplayTime = now;
         }
     }
 
     std::cout << "\nAnagrams found: " << this->anagramCount << std::endl;
-    return {};
+    return;
 }
 
 void ArmaMagna::print()
 {
     std::println("\nArmaMagna multi-threaded anagrammer engine\n");
 
-    std::println("{:<40}{}", "[*] Source text:",               targetText);
+    std::println("{:<40}{}", "[*] Target text:",               targetText);
     std::println("{:<40}{}", "[*] Dictionary:",                dictionaryName);
     std::println("{:<40}{}", "[*] Included text:",             includedText.empty() ? "<void>" : includedText);
     std::println("{:<40}({},{})", "[*] Cardinality:",          minCardinality, maxCardinality);
@@ -248,16 +240,16 @@ void ArmaMagna::print()
     std::println("{:<40}{}", "[*] Threads to launch:",         numThreads);
     std::println("");
 
-    std::println("{:<40}{}", "[*] Source text signature:",      targetSignature.toString());
+    std::println("{:<40}{}", "[*] Target signature:",           targetSignature.toString());
     std::println("{:<40}{}", "[*] Included words number:",      includedWordsNumber);
     std::println("{:<40}{}", "[*] Included text signature:",    includedText.empty() ? "<void>" : std::format("{}", includedTextSignature.toString()));
-    std::println("{:<40}{}", "[*] Target signature:",           actualTargetSignature.toString());
-    std::println("{:<40}({},{})", "[*] Effective cardinality:", actualMinCardinality, actualMaxCardinality);
+    std::println("{:<40}{}", "[*] Actual target signature:",    actualTargetSignature.toString());
+    std::println("{:<40}({},{})", "[*] Actual cardinality:",    actualMinCardinality, actualMaxCardinality);
     std::println("");
 }
 
 //Counts words in a string
-int countWords(const std::string &str)
+int countWords(const std::string& str)
 {
     auto count = std::ranges::distance(
         str

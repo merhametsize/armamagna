@@ -28,13 +28,8 @@ public:
                     const std::string &included, int mincard, int maxcard, int numThreads)
                     -> std::expected<void, std::string>;
 
-    //Getters
-    const std::string &getSourceText() const;
-    const std::string &getDictionaryName() const;
-    const std::string &getIncludedText() const;
-
     //Setters
-    auto setSourceText(const std::string targetText) -> std::expected<void, std::string>;
+    auto setTargetText(const std::string targetText) -> std::expected<void, std::string>;
     void setDictionaryName(const std::string dictionaryName);
     auto setIncludedText(const std::string includedText) -> std::expected<void, std::string>;
     auto setRestrictions(int minCardinality, int maxCardinality) -> std::expected<void, std::string>;
@@ -74,7 +69,7 @@ private:
 
     //Private functions
     void print();                               //Debug print function
-    std::expected<void, std::string> ioLoop(); //Thread that writes anagrams to file
+    void ioLoop(); //Thread that writes anagrams to file
 };
 
 #endif
